@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string-array name="support_language">
+        <item>@string/support_lang_01</item>
+        <item>@string/support_lang_02</item>
+        <item>@string/support_lang_03</item>
+        <item>@string/support_lang_04</item>
+        <item>@string/support_lang_05</item>
+        <item>@string/support_lang_06</item>
+        <item>@string/support_lang_07</item>
+        <item>@string/support_lang_08</item>
+        <item>@string/support_lang_09</item>
+        <item>@string/support_lang_10</item>
+    </string-array>
+    
+    <string-array name="support_language_code">
+        <item>@string/ko_KR</item>
+        <item>@string/en_US</item>
+        <item>@string/zh_CN</item>
+        <item>@string/zh_TW</item>
+        <item>@string/ja_JP</item>
+        <item>@string/de_DE</item>
+        <item>@string/fr_FR</item>
+        <item>@string/es_ES</item>
+        <item>@string/ar_EG</item>
+        <item>@string/hi_IN</item>
+    </string-array>
+
+</resources>

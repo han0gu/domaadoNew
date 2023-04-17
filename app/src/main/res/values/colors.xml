@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cdv_splashscreen_background">#FFFFFF</color>
+    <color name="colorPrimary">#D81B60</color>
+    <color name="colorPrimaryDark">#BB1658</color>
+    <color name="colorAccent">#304FFE</color>
+    <color name="colorPrimarySplash">#000000</color>
+    <color name="colorPrimaryDarkSplash">#000000</color>
+    <color name="colorAccentSplash">#E65100</color>
+    <color name="colorWhite">#FFFFFF</color>
+
+    <drawable name="theme_blue">#FF007BCB</drawable>
+    <drawable name="theme_blue_ov">#66A3CB</drawable>
+    <drawable name="theme_white">#ffffff</drawable>
+    <drawable name="theme_white_ov">#eeeeee</drawable>
+    <drawable name="theme_black_btn_ov">#12000000</drawable>
+    <drawable name="theme_routing_bottom">#115fc9</drawable>
+    <drawable name="theme_routing_bottom_close">#004b87</drawable>
+    <drawable name="theme_blue_disable">#330086d6</drawable>
+
+    <drawable name="dialog_line">#334F4F4F</drawable>
+
+    <color name="main_top">#243053</color>
+    <color name="main_range">#397F55</color>
+
+    <color name="main_list_gps_bg">#7b8bb4</color>
+
+    <color name="sub_top">#222e51</color>
+
+    <color name="intro_bg">#0372fc</color>
+
+    <color name="candidate_normal">#FFffffff</color>
+    <color name="candidate_recommended">#FFE35900</color>
+    <color name="candidate_other">#ff808080</color>
+    <color name="candidate_background">#111ebd00</color>
+
+    <color name="White">#ffffff</color>
+    <color name="Black">#000</color>
+    <color name="Grey">#7f7f7f</color>
+    <color name="GreyDisable">#777f7f7f</color>
+    <color name="DarkGrey">#4F4F4F</color>
+    <color name="DarkGreyDisable">#774f4f4f</color>
+    <color name="Green">#0F0</color>
+    <color name="TransparentGrey">#7F000000</color>
+    <color name="Transparent">#FF000000</color>
+    <color name="ui_bg_medium_gray">#e2e2e2</color>
+    <color name="ltblue">#74B9EF</color>
+
+    <color name="menuTitleBg">#263050</color>
+    <color name="menuBg">#1c1d1f</color>
+    <color name="menuSecTitleBg">#333333</color>
+
+    <color name="white_opaque">#FFFFFFFF</color>
+    <color name="pitch_black">#FF2A2A2A</color>
+    <color name="lineColor">#FFCCCCCC</color>
+    <color name="marketValue">#FFFF6600</color>
+
+    <color name="itemColor">#FFd18f00</color>
+    <color name="subtext">#FF666666</color>
+
+    <!-- 2015-01-07 update -->
+    <color name="title_bg">#f25e5f</color>
+    <color name="login_btn_bg">#ff6e6f</color>
+    <color name="find_pass_btn_bg">#d76567</color>
+    <color name="join_btn_bg">#975357</color>
+    <color name="join_title_txt">#fae640</color>
+    <color name="line_gray">#999999</color>
+    <color name="popup_bg">#eeeeee</color>
+
+    <color name="theme_color">#FFBD3570</color>
+    <color name="theme_color2">#BD5270</color>
+    <color name="theme_btn_color">#303030</color>
+
+    <drawable name="theme_color">#FF2D348D</drawable>
+    <drawable name="theme_color2">#66A3CB</drawable>
+    <drawable name="theme_btn_color">#303030</drawable>
+
+    <color name="theme_color2_outline">#004C7E</color>
+
+    <color name="mypage_photo_bg">#081330</color>
+    <drawable name="mypage_photo_bg">#081330</drawable>
+
+    <color name="orange_color">#ea6724</color>
+    <color name="orange_disable_color">#fecfb7</color>
+    <color name="over_color">#00fff0</color>
+    <color name="button_color">#006e5d</color>
+    <color name="yellow_color">#fae640</color>
+
+    <color name="search_btn_bg">#3d79f8</color>
+    <drawable name="search_btn_bg">#3d79f8</drawable>
+
+    <color name="ltblue_btn_bg">#3d79f8</color>
+
+    <color name="gcdelivery_bg">#0E65AA</color>
+    <drawable name="gcdelivery_bg">#0E65AA</drawable>
+
+    <drawable name="notification_item_background_color">#ff111111</drawable>
+
+    <drawable name="bg6">#ff585858</drawable>
+
+    <!-- for tab -->
+    <color name="background_tab_pressed">#6633B5E5</color>
+    <color name="background_window">#FFE5E5E5</color>
+
+    <drawable name="next_btn_pink_ov">@color/orange_disable_color</drawable>
+    <drawable name="next_btn_pink">@color/theme_color2</drawable>
+
+    <drawable name="next_btn_tblue_ov">#ff3e5596</drawable>
+    <drawable name="next_btn_tblue">#ff222E51</drawable>
+
+    <color name="config_switch_on">#ffd70246</color>
+    <color name="config_switch_off">#ff231815</color>
+
+</resources>

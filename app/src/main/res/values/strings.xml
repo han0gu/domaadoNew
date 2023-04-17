@@ -1,0 +1,248 @@
+<resources>
+    <string name="app_name">도매도</string>
+    <string name="app_title">DOMAADO</string>
+
+    <string name="permission_not_allowed">이 앱을 사용하려면 필요한 권한을 허용 해야합니다.</string>
+
+    <string name="require_google_service_api">구글 플레이 서비스가 정상동작하지 않습니다.\n원활한 앱 서비스를 위하여 해당 서비스를 점검해 주시기 바랍니다.</string>
+
+    <!-- intro -->
+    <string name="intro_message_tit"><![CDATA[시장에서 집으로 가장 신선한 제품을 가장 빠르게]]></string>
+
+    <!-- main -->
+    <string name="call_row_elapsedtime">조금 전</string>
+    <string name="call_row_elapsedtime_min">%1$s분전</string>
+    <string name="call_row_elapsedtime_hour">%1$s:%2$s분전</string>
+
+    <string name="camera_descript">사진을 촬영해 주세요</string>
+
+    <string name="pick_image_intent_text">사진 가져올 방법을 선택하세요</string>
+
+    <!-- sharing location -->
+    <string name="driver_delevery_report_fail">실시간 위치를 공유하지 못했습니다.</string>
+    <string name="driver_location_reporting">이동정보를 공유하고 있습니다.</string>
+
+    <string name="can_not_next_no_more_photo">촬영된 사진이 없습니다.\n사진을 촬영해 주시기 바랍니다.</string>
+    <string name="camera_shot_limit">최소 %1$s장의 사진을 촬영해 주세요.</string>
+
+    <!-- camera layout -->
+    <string name="camera_item1">정면</string>
+    <string name="camera_item2">앞우측휀더</string>
+    <string name="camera_item3">우측측면</string>
+    <string name="camera_item4">뒤우측휀더</string>
+    <string name="camera_item5">뒷면</string>
+    <string name="camera_item6">뒤좌측휀더</string>
+    <string name="camera_item7">좌측측면</string>
+    <string name="camera_item8">앞좌측휀더</string>
+    <string name="camera_item9">상단/하단</string>
+    <string name="camera_item10">기타1</string>
+    <string name="camera_item11">기타2</string>
+    <string name="camera_item12">기타3</string>
+
+    <!-- connection issue -->
+    <string name="conn_issue_desc1">서버와 통신이 원활하지 않습니다.</string>
+    <string name="conn_issue_desc2">인터넷 연결상태를 확인해주세요.</string>
+
+    <!-- custom alert dialog -->
+    <string name="custom_dialog_default_mesg">Customized Dialog</string>
+
+    <string name="dialog_new_version">새 버전이 출시되었습니다.\n지금 업데이트 하시겠습니까?</string>
+    <string name="dialog_gps_setup">정확한 현 위치 파악을 위해 위치서비스를 켜 주세요.</string>
+    <string name="dialog_allow_noti">월활한 서비스 이용을 위하여 앱 알림을 허용해 주세요.</string>
+    <string name="dialog_do_exit">종료하시겠습니까?</string>
+
+    <string name="dialog_error_title">오류</string>
+    <string name="dialog_notify_title">알림</string>
+
+    <string name="twicback_to_exit_message">두번 연속으로 누르면 종료됩니다.</string>
+
+    <string name="webview_ssl_error">이 사이트의 보안 인증서는 신뢰할 수 없습니다.</string>
+    <string name="file_choose_title">파일 가져올 방법 선택</string>
+
+    <!-- server -->
+    <string name="check_api_server" translatable="false">Checking Server..</string>
+    <string name="can_not_connect_server">Unable to contact server.</string>
+    <string name="server_loading_message">Contacting server...</string>
+    <string name="server_response_error">Unstable server connection.</string>
+
+    <string name="server_image_download">Loading images...</string>
+
+    <string name="server_json_data_error">서버오류입니다.</string>
+
+    <string name="server_json_string_error">데이터에 오류가 있습니다.</string>
+
+    <string name="server_json_empty_list">데이터가 없습니다.</string>
+
+    <string name="server_have_update">새 앱이 등록되어 있습니다.\n지금 업데이트할까요?</string>
+
+    <string name="setting_check_internet">An internet connection is required to use the service.</string>
+    <string name="setting_check_gps">정확한 위치정보 사용을 위하여 GPS를 활성화 하셔야 합니다.</string>
+    <string name="setting_check_bluetooth">Bluetooth must be enabled to use indoor navigation and AR view.</string>
+
+    <string name="permission_gps_message"><![CDATA[If GPS is not turned on, \nYou can not use the navigation service. \n\nPlease turn on GPS in the device settings.]]></string>
+    <string name="permission_ble_message"><![CDATA[If bluetooth is off, \nYou can not use indoor directions and AR view. \n\nPlease turn on Bluetooth in the device settings.]]></string>
+    <string name="permission_phone_message"><![CDATA[If the phone status is unknown, some features may be limited.]]></string>
+    <string name="permission_camera_message"><![CDATA[If you do not have camera usage rights, you can not use AR view.]]></string>
+    <string name="permission_account_message"><![CDATA[Some functions may be restricted if access to the user information set on the phone is denied.]]></string>
+    <string name="permission_storage_message"><![CDATA[If you do not have permission to use an external storage device, the app may not work properly.]]></string>
+    <string name="permission_phonenumber_message">신속한 사용자 인증을 위하여 전화기의 전화번호를 확인합니다.</string>
+
+    <string name="url_site" translatable="false">https://domaado.me</string>
+    <string name="path" translatable="false">/Domaado</string>
+
+    <!-- Server Urls -->
+
+    <string name="url_update_location" translatable="false">/common/APP1022/app/_API/XY_api.asp</string>
+
+    <!-- 업데이트확인 -->
+    <string name="url_check_update" translatable="false">/common/APP1022/app/_API/check_update.asp</string>
+
+    <!-- 기사위치공유 -->
+    <string name="url_driver_location" translatable="false">/common/APP1022/app/_API/user_location.asp</string>
+
+    <!-- share redirect url -->
+    <string name="share_url" translatable="false">/common/APP1022/app/_API/share.asp</string>
+    <string name="share_image_url" translatable="false">/common/APP1022/app/_API/share_image.png</string>
+
+    <string name="url_push_content" translatable="false"><![CDATA[/common/APP1022/app/push/view.asp?msg_idx=1123&user_idx=11]]></string>
+
+    <!-- 파일 다운로드 -->
+    <string name="file_download_title">파일 다운로드...</string>
+    <string name="file_downloading_message">파일을 다운로드 중입니다.</string>
+
+    <!-- 웹 컨텐츠 -->
+
+    <string name="open_url_message" translatable="false">새로운 알림이 도착했습니다.</string>
+
+    <!-- 초기페이지 https://www.carsayo.net/app/home/main.asp?vipptsid=android&device_id=xxxxxx -->
+    <string name="url_webcontent_main" translatable="false"><![CDATA[/?vipptsid=android&device_id=%1$s]]></string>
+
+    <string name="progress_default_message"><![CDATA[Waiting...]]></string>
+    <string name="not_found_browser">이용에 불편을 드려 죄송합니다.\n사용가능한 브라우저를 찾을 수 없습니다.</string>
+
+    <string name="btn_yes">예</string>
+    <string name="btn_neutral">아니오</string>
+    <string name="btn_no">아니오</string>
+    <string name="btn_ok">확인</string>
+    <string name="btn_cancel">취소</string>
+    <string name="btn_close">닫기</string>
+    <string name="btn_next">다음</string>
+    <string name="btn_create">생성</string>
+    <string name="btn_select">선택</string>
+    <string name="btn_open">열기</string>
+    <string name="btn_save">저장</string>
+    <string name="btn_delete">삭제</string>
+    <string name="btn_setting">설정</string>
+    <string name="btn_skip">건너뛰기</string>
+    <string name="btn_renew">새로고침</string>
+    <string name="btn_finish">종료</string>
+    <string name="btn_7dayskeep">7일동안 보지않기</string>
+    <string name="btn_use">사용합니다</string>
+    <string name="btn_payment">결제요청</string>
+    <string name="btn_call_center">콜센터</string>
+    <string name="btn_cancel_order">접수취소</string>
+    <string name="btn_allright">맞습니다</string>
+    <string name="btn_wrong">틀립니다</string>
+    <string name="btn_detail">자세히보기</string>
+    <string name="btn_favorites">즐겨찾기</string>
+    <string name="btn_call_phone">전화걸기</string>
+    <string name="btn_go">찾아가기</string>
+    <string name="btn_confirm">완료</string>
+    <string name="btn_view">보기</string>
+    <string name="btn_shot">촬영</string>
+    <string name="btn_shot_count">%1$s/%2$s 촬영</string>
+    <string name="btn_base_shoot">기본카메라</string>
+    <string name="btn_card_pay">카드결제</string>
+    <string name="btn_cash_pay">현금결제</string>
+    <string name="btn_term_pay">단말기결제</string>
+    <string name="btn_always">항상</string>
+    <string name="btn_once">이번만</string>
+    <string name="btn_continue">계속</string>
+    <string name="choose_camera_app">선택해주세요</string>
+
+    <!-- sub_title -->
+    <string name="sub_title_text">Recent history</string>
+    <string name="sub_title_edit_text">Edit</string>
+
+    <string name="hour_string"><![CDATA[%1$d hour %2$d minute]]></string>
+    <string name="minute_string"><![CDATA[%1$d minute]]></string>
+    <string name="under_minute_string"><![CDATA[Within 1 minute]]></string>
+    <string name="meter_string" translatable="false"><![CDATA[%,.2f km]]></string>
+    <string name="formeter_string"><![CDATA[%1$d m]]></string>
+    <string name="hour_string_bottom"><![CDATA[%1$d:%2$d]]></string>
+    <string name="meter_string_bottom"><![CDATA[%,.2f km]]></string>
+
+    <!-- camera -->
+    <string name="photo_box_hint">눌러서촬영</string>
+
+    <string name="camera_error">카메라</string>
+    <string name="use_default_camera">내장 카메라앱 사용</string>
+
+    <string name="camera_shot_guide">차량이 붉은색 점선 안에 오도록 하여 촬영하세요.</string>
+
+    <string name="retry_base_camera">촬영을 다시 시도해 보세요.</string>
+    <string name="can_not_use_to_camera">일시적으로 카메라를 사용할 수 없습니다. 앱을 다시 구동해보세요.</string>
+
+    <string name="camera_detail_view_title">사진 (%1$s/%2$s)</string>
+
+    <string name="please_wait_loading">Loading...</string>
+
+    <string name="notfound_camera_app">지정된 카메라 어플리케이션을 찾을 수 없습니다.</string>
+
+    <string name="delete_question_camera_pkg">기본지정 카메라 선택항목을 삭제할까요?</string>
+    <string name="delete_success_camera_pkg">삭제했습니다.</string>
+
+    <!-- Share -->
+    <string name="text_share_intent_chooser">어떤 앱을 통해 공유하시겠습니까?</string>
+    <string name="share_upload_image_fail">이미지공유 서버에 이미지 등록 오류입니다.</string>
+
+    <string name="share_title">%1$s 앱을 설치해보세요</string>
+    <string name="share_message">안녕하세요? 고철비철 중개 플랫폼 철스크랩입니다.</string>
+
+    <!-- TTS -->
+    <string name="voice_tts_startup">Welcome to good valet parking service.</string>
+
+    <!-- push -->
+    <string name="push_title">알려드립니다</string>
+    <string name="push_message">새로운 변경사항이 있습니다. 앱을 확인해 주세요.</string>
+
+    <!-- language -->
+    <string name="support_lang_01" translatable="false">한국어</string>
+    <string name="support_lang_02" translatable="false">English</string>
+    <string name="support_lang_03" translatable="false">中国</string>
+    <string name="support_lang_04" translatable="false">台灣</string>
+    <string name="support_lang_05" translatable="false">日本</string>
+    <string name="support_lang_06" translatable="false">Deutsch</string>
+    <string name="support_lang_07" translatable="false">Français</string>
+    <string name="support_lang_08" translatable="false">Español</string>
+    <string name="support_lang_09" translatable="false">العربية</string>
+    <string name="support_lang_10" translatable="false">हिन्दी</string>
+
+    <string name="ko_KR" translatable="false">ko_KR</string>
+    <string name="en_US" translatable="false">en_US</string>
+    <string name="zh_CN" translatable="false">zh_CN</string>
+    <string name="zh_TW" translatable="false">zh-TW</string> <!-- Common.java에서 별도처리! -->
+    <string name="ja_JP" translatable="false">ja_JP</string>
+    <string name="de_DE" translatable="false">de_DE</string>
+    <string name="fr_FR" translatable="false">fr_FR</string>
+    <string name="es_ES" translatable="false">es_ES</string>
+    <string name="hi_IN" translatable="false">hi_IN</string>
+    <string name="ar_EG" translatable="false">ar_EG</string>
+
+    <string translatable="false" name="cscenter_phone_number">tel:01012341234</string>
+
+    <string name="copyright" translatable="false">도매 직거래장터</string>
+
+    <!-- ACRA Dialog -->
+    <string name="crash_toast_text" translatable="false">I crashed, but a report has been sent to my developer to help fix the issue !</string>
+    <string name="crash_notif_ticker_text" translatable="false">Unexpected error, please send a report&#8230;</string>
+    <string name="crash_notif_title" translatable="false">Application has crashed&#8230;</string>
+    <string name="crash_notif_text" translatable="false">Please click here to help fix the issue.</string>
+    <string name="crash_dialog_title" translatable="false">Application has crashed</string>
+    <string name="crash_dialog_text" translatable="false">An unexpected error occurred forcing the
+    application to stop. Please help us fix this by sending us error data,
+    all you have to do is click OK.</string>
+    <string name="crash_dialog_comment_prompt" translatable="false">You might add your comments about the problem below:</string>
+    <string name="crash_dialog_ok_toast" translatable="false">Thank you !</string>
+
+</resources>

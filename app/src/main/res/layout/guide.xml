@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/White"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/guide_top_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="20dp">
+
+        <include
+            android:id="@+id/guide_top"
+            layout="@layout/sub_title_top"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/White"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <com.domaado.market.webview.MyWebView
+        android:id="@+id/guide_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/guide_bottom_layout"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/guide_top_box" />
+
+    <LinearLayout
+        android:id="@+id/guide_bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"></LinearLayout>
+
+</RelativeLayout>

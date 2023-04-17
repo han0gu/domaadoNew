@@ -1,0 +1,117 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!--<com.valetparking.valetdriver.widget.AutoFitTextureView-->
+        <!--android:id="@+id/textureView"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
+
+
+        <com.camerakit.CameraKitView
+            android:id="@+id/camera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:keepScreenOn="true"
+            app:camera_facing="back"
+            app:camera_flash="auto"
+            app:camera_focus="continuous"
+            app:camera_permissions="camera"
+            app:camera_zoomFactor="1" />
+
+
+        <me.mattak.aspect_ratio_layout.LinearLayout
+            android:id="@+id/camera_get_area"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:gravity="center_vertical|center_horizontal"
+            app:aspect_height="1"
+            app:aspect_width="1">
+
+            <ImageView
+                android:layout_width="340dp"
+                android:layout_height="340dp"
+                android:src="@drawable/dotted" />
+
+        </me.mattak.aspect_ratio_layout.LinearLayout>
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="30dp"
+            android:text="@string/camera_shot_guide"
+            android:textColor="@color/White" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:gravity="center_horizontal"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/camera_get_cancel_btn"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_gray_bg"
+                android:text="@string/btn_cancel"
+                android:textColor="@color/White"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/camera_get_base_btn"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_gray_bg"
+                android:text="@string/btn_base_shoot"
+                android:textColor="@color/White"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/camera_get_shot_btn"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_gray_bg"
+                android:enabled="false"
+                android:text="@string/btn_shot_count"
+                android:textColor="@color/White"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/camera_submit_btn"
+                android:layout_width="0dip"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_gray_bg"
+                android:text="@string/btn_confirm"
+                android:textColor="@color/White"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+    
+</LinearLayout>

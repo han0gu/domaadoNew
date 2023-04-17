@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="40dp"
+        android:maxWidth="400dp"
+        android:orientation="vertical" >
+<!-- 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#000000"
+            android:orientation="horizontal" > -->
+
+        <LinearLayout
+            android:id="@+id/custom_dialog_title_layout"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/theme_color"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/custom_dialog_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="35dp"
+                android:gravity="left"
+                android:text="TITLE"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+            <!-- TextView와 닫기 버튼 사이에 이미지 -->
+
+            <ImageButton
+                android:id="@+id/custom_dialog_close_btn"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="-30dp"
+                android:adjustViewBounds="true"
+                android:background="@android:color/transparent"
+                android:scaleType="centerInside"
+                android:src="@drawable/popup_close" />
+
+        </LinearLayout>
+<!--         </LinearLayout> -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:background="#000000"
+            android:orientation="horizontal" >
+
+            <ScrollView
+                android:id="@+id/custom_dialog_scroll_view"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#ffffff" >
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:paddingTop="10dp" >
+
+                        <TextView
+                            android:id="@+id/cd_message"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginRight="20dp"
+                            android:layout_marginTop="36dp"
+                            android:gravity="center_horizontal"
+                            android:text="Messages"
+                            android:textColor="@color/DarkGrey"
+                            android:textSize="16sp" />
+
+                        <EditText
+                            android:id="@+id/custom_dialog_value"
+                            android:layout_width="match_parent"
+                            android:layout_height="35dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginLeft="20dp"
+                            android:layout_marginRight="20dp"
+                            android:background="@color/lineColor"
+                            android:ems="10"
+                            android:gravity="center"
+                            android:paddingLeft="10dp"
+                            android:singleLine="true"
+                            android:textSize="16sp">
+
+                            <requestFocus />
+
+                        </EditText>
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:src="@drawable/theme_blue" />
+
+                        <LinearLayout
+                            android:id="@+id/popup_button_set_yn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:weightSum="2">
+
+                            <Button
+                                android:id="@+id/cd_no_btn"
+                                android:layout_width="0dip"
+                                android:layout_height="54dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/selector_btn_white"
+                                android:text="@string/btn_cancel"
+                                android:textColor="@color/theme_color"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <Button
+                                android:id="@+id/cd_ok_btn"
+                                android:layout_width="0dip"
+                                android:layout_height="54dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/selector_btn_blue"
+                                android:text="@string/btn_ok"
+                                android:textColor="@color/White"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/popup_button_set_ok"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_horizontal"
+                            android:visibility="gone"
+                            android:weightSum="1">
+
+                            <Button
+                                android:id="@+id/cd_close_btn"
+                                android:layout_width="0dip"
+                                android:layout_height="54dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/selector_btn_blue"
+                                android:text="@string/btn_close"
+                                android:textColor="@color/White"
+                                android:textSize="17.4sp"
+                                android:textStyle="bold"
+                                android:typeface="sans" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </FrameLayout>
+
+            </ScrollView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</FrameLayout>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "891641671930",
+    "project_id": "beam-b8815",
+    "storage_bucket": "beam-b8815.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:891641671930:android:a89eb50eef79299a879943",
+        "android_client_info": {
+          "package_name": "com.datacook.beam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "891641671930-n0pcf91cj023uek8ipfoch27pcnn697d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjIE9sMb4R8PN3vMXr0E0xtOgonu3RL6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "891641671930-n0pcf91cj023uek8ipfoch27pcnn697d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
