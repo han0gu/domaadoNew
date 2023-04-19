@@ -26,6 +26,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.domaado.mobileapp.App;
 import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.R;
@@ -109,8 +110,18 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
         }
     }
 
-    public void openBroswer(String url) {
+    public void openBrowser(String url) {
         try {
+
+            if(App.isIsTEST()) {
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity, "OPEN BROWSER", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
             if (!url.startsWith("http://") && !url.startsWith("https://"))
                 url = "http://" + url;
 
@@ -217,7 +228,6 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
                 || url.contains("mpocket")
                 || url.contains("mvaccine")
                 || url.contains("market.android.com")
-                || url.startsWith("intent://")
                 || url.contains("samsungpay")
                 || url.contains("droidx3web://")
                 || url.contains("kakaopay")
@@ -272,7 +282,7 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
             // 지정된 서버의 컨텐츠를 부르고 있는지 판단.
             if(url.startsWith(mActivity.getResources().getString(R.string.url_site))||url.startsWith(mActivity.getResources().getString(R.string.url_site_test))) return false;
             else {
-                openBroswer(url);
+                openBrowser(url);
                 return true;
             }
         } else if(url.startsWith("tel:")) {
