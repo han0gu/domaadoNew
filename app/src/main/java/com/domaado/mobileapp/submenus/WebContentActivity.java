@@ -332,6 +332,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
     protected void onResume() {
         super.onResume();
 
+        myLog.d(TAG, "*** onResume");
+
         if(mLocalBroadcastManager==null) {
             mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
             IntentFilter mIntentFilter = new IntentFilter();
@@ -676,8 +678,10 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             path = getIntent().getStringExtra("url");
         }
 
+        String cacheParam = String.format(Locale.getDefault(), "?v=%s", Common.getAppVersion(this));
+
         if(TextUtils.isEmpty(path)) {
-            path = App.isIsTEST() ? getResources().getString(R.string.url_site_test) : getResources().getString(R.string.url_site); // + getResources().getString(R.string.url_webcontent_main, Common.getDefaultUUID(this, UUID.randomUUID().toString()));
+            path = App.isIsTEST() ? getResources().getString(R.string.url_site_test)+cacheParam : getResources().getString(R.string.url_site)+cacheParam; // + getResources().getString(R.string.url_webcontent_main, Common.getDefaultUUID(this, UUID.randomUUID().toString()));
         }
 
         myLog.d(TAG, "*** web path:"+path);
@@ -804,7 +808,10 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             }
         }));
 
-        setWebViewOptions();
+        /**
+         * MyWebview에서 처리함.
+         */
+//        setWebViewOptions();
 
         mWebView.loadUrl(url);
 

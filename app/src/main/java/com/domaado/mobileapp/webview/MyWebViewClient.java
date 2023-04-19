@@ -270,7 +270,7 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
         } else if(url.startsWith("http")){
 
             // 지정된 서버의 컨텐츠를 부르고 있는지 판단.
-            if(url.startsWith(mActivity.getResources().getString(R.string.url_site))) return false;
+            if(url.startsWith(mActivity.getResources().getString(R.string.url_site))||url.startsWith(mActivity.getResources().getString(R.string.url_site_test))) return false;
             else {
                 openBroswer(url);
                 return true;
