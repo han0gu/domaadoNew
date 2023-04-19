@@ -11,15 +11,13 @@ import android.os.Message;
 import android.util.Base64;
 import android.widget.Toast;
 
-import com.kakao.kakaolink.v2.KakaoLinkResponse;
-import com.kakao.kakaolink.v2.KakaoLinkService;
-import com.kakao.message.template.ButtonObject;
-import com.kakao.message.template.ContentObject;
-import com.kakao.message.template.FeedTemplate;
-import com.kakao.message.template.LinkObject;
 import com.kakao.network.ErrorResult;
-import com.kakao.network.callback.ResponseCallback;
-import com.kakao.network.storage.ImageUploadResponse;
+import com.kakao.sdk.template.model.Button;
+import com.kakao.sdk.template.model.Content;
+import com.kakao.sdk.template.model.FeedTemplate;
+import com.kakao.sdk.template.model.ItemContent;
+import com.kakao.sdk.template.model.Link;
+import com.kakao.sdk.template.model.Social;
 import com.kakao.util.helper.log.Logger;
 
 import com.domaado.mobileapp.Common;
@@ -31,6 +29,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.kakao.util.helper.Utility.getPackageInfo;
@@ -209,6 +208,14 @@ public class KakaoTalklink {
         myLog.e(TAG, "*** imgUrl: "+imgUrl);
 
         //String newUrl = String.format("%s?url=%s", context.getResources().getString(R.string.share_url), urlText);
+        Button button = new Button("자세히 보기", new Link(urlText, urlText));
+
+        FeedTemplate params = new FeedTemplate(new Content(title, imgUrl, new Link(imgUrl, imgUrl), bodyText),
+                new ItemContent(),
+                new Social(),
+
+        List<Button> buttons = new ArrayList<>(){new Button("자세히 보기", new Link(urlText, urlText))};
+
 
         FeedTemplate params = FeedTemplate
                 .newBuilder(ContentObject.newBuilder(title,
