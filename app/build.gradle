@@ -18,14 +18,14 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.datacook.beam"
+        applicationId "com.domaado.mobileapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode versionBuild
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        setProperty("archivesBaseName", "Beam-$versionName" + '.' + versionBuild)
+        setProperty("archivesBaseName", "Domaado-$versionName" + '.' + versionBuild)
 
         useLibrary 'org.apache.http.legacy'
     }

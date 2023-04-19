@@ -1,34 +1,41 @@
 {
   "project_info": {
-    "project_number": "891641671930",
-    "project_id": "beam-b8815",
-    "storage_bucket": "beam-b8815.appspot.com"
+    "project_number": "421320343190",
+    "project_id": "domaadoapp",
+    "storage_bucket": "domaadoapp.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:891641671930:android:a89eb50eef79299a879943",
+        "mobilesdk_app_id": "1:421320343190:android:77dfe2cbaa6a2b0667ccb7",
         "android_client_info": {
-          "package_name": "com.datacook.beam"
+          "package_name": "com.domaado.mobileapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "891641671930-n0pcf91cj023uek8ipfoch27pcnn697d.apps.googleusercontent.com",
+          "client_id": "421320343190-4eg7ictk2eiusdr225okmvme6qtmimn6.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDjIE9sMb4R8PN3vMXr0E0xtOgonu3RL6k"
+          "current_key": "AIzaSyD4dXQ9UeaoofxapdbpgIU-8dnm-r5p7bs"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "891641671930-n0pcf91cj023uek8ipfoch27pcnn697d.apps.googleusercontent.com",
+              "client_id": "421320343190-4eg7ictk2eiusdr225okmvme6qtmimn6.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "421320343190-nkj6ob3s1c36gv5a13ffd9sligjnm8vh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.domaado.mobileapp"
+              }
             }
           ]
         }

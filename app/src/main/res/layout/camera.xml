@@ -554,7 +554,7 @@
                     app:srcCompat="@drawable/popup_close" />
             </LinearLayout>
 
-            <com.domaado.market.widget.CustomZoomableImageView
+            <com.domaado.mobileapp.widget.CustomZoomableImageView
                 android:id="@+id/camera_detail_view_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

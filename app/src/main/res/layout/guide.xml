@@ -22,7 +22,7 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <com.domaado.market.webview.MyWebView
+    <com.domaado.mobileapp.webview.MyWebView
         android:id="@+id/guide_webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
