@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -12,6 +14,18 @@ import android.util.Base64;
 import android.widget.Toast;
 
 import com.kakao.network.ErrorResult;
+import com.kakao.sdk.friend.client.PickerClient;
+import com.kakao.sdk.friend.model.OpenPickerFriendRequestParams;
+import com.kakao.sdk.friend.model.PickerOrientation;
+import com.kakao.sdk.friend.model.PickerServiceTypeFilter;
+import com.kakao.sdk.friend.model.SelectedUsers;
+import com.kakao.sdk.friend.model.ViewAppearance;
+import com.kakao.sdk.share.ShareClient;
+import com.kakao.sdk.share.model.ImageUploadResult;
+import com.kakao.sdk.talk.TalkApiClient;
+import com.kakao.sdk.talk.model.Friend;
+import com.kakao.sdk.talk.model.Friends;
+import com.kakao.sdk.talk.model.FriendsContext;
 import com.kakao.sdk.template.model.Button;
 import com.kakao.sdk.template.model.Content;
 import com.kakao.sdk.template.model.FeedTemplate;
@@ -25,14 +39,21 @@ import com.domaado.mobileapp.R;
 import com.domaado.mobileapp.widget.myLog;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.kakao.util.helper.Utility.getPackageInfo;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 
 /**
  * Created by kbins(James Hong) on 2020,January,17
@@ -99,22 +120,57 @@ public class KakaoTalklink {
     public void uploadImageFromFile(String path, Handler handler) {
         File file = new File(path);
 
-        KakaoLinkService.getInstance().uploadImage(context, false, file, new ResponseCallback<ImageUploadResponse>() {
-            @Override
-            public void onFailure(ErrorResult errorResult) {
-                Logger.e(errorResult.toString());
-                myLog.d(TAG, "*** uploadImageFromFile onFailure! - "+errorResult.toString());
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
 
+        try {
+            FileOutputStream stream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        ShareClient.getInstance().uploadImage(file, (imageUploadResult, error) -> {
+            if(error != null) {
+                myLog.e(TAG, "*** ShareClient Error: "+error.toString());
                 if(handler!=null) handler.sendEmptyMessage(1);
-            }
-
-            @Override
-            public void onSuccess(ImageUploadResponse result) {
+            } else if(imageUploadResult != null) {
+                myLog.d(TAG, "*** ImageUploadSuccess!: "+imageUploadResult.toString());
                 if(handler!=null) handler.sendEmptyMessage(0);
             }
+            return null;
         });
     }
 
+    public void selectFriend() {
+        OpenPickerFriendRequestParams openPickerFriendRequestParams = new OpenPickerFriendRequestParams(
+                "친구를 선택하세요",
+                PickerServiceTypeFilter.TALK,
+                ViewAppearance.AUTO,
+                PickerOrientation.AUTO,
+                true,
+                true,
+                true,
+                true,true
+        );
+
+        PickerClient.getInstance().selectFriendsPopup(
+                context,
+                openPickerFriendRequestParams,
+                (selectedUsers, error) -> {
+                    if(error != null) {
+                        Logger.e(error.toString());
+                        myLog.d(TAG, "*** selectFriend error! - "+error.toString());
+                    } else {
+                        myLog.d(TAG, "*** selectFriend onSuccess! - "+selectedUsers.getTotalCount());
+
+                        selectedUsers.getUsers().get(0).getUuid();
+                    }
+                    return null;
+                });
+    }
+
+    //https://developers.kakao.com/docs/latest/ko/message/android-link
     public void shareApp() {
 
         String link = "https://play.google.com/store/apps/details?id="+ context.getPackageName();
@@ -123,6 +179,42 @@ public class KakaoTalklink {
         Map<String, String> serverCallbackArgs = new HashMap<String, String>();
         serverCallbackArgs.put("user_id", "${current_user_id}");
         serverCallbackArgs.put("product_id", "${shared_product_id}");
+
+        TalkApiClient.getInstance().friends((friendFriends, error) -> {
+
+            if(error != null) {
+                Logger.e(error.toString());
+                myLog.d(TAG, "*** shareApp onFailure! - "+error.toString());
+            } else if(friendFriends != null) {
+                myLog.d(TAG, "*** shareApp onSuccess! - "+friendFriends.getTotalCount());
+
+                if(friendFriends.getElements().isEmpty()) {
+                    myLog.e(TAG, "*** shareApp friends is empty!");
+                } else {
+
+
+
+                    List<String> receiverUuids;
+
+                    // 메시지 보내기
+                    TalkApiClient.getInstance().sendScrapMessage(receiverUuids, url) { result, error ->
+                        if (error != null) {
+                            myLog.e(TAG, "메시지 보내기 실패: "+error.toString());
+                        }
+                        else if (result != null) {
+                            myLog.i(TAG, "메시지 보내기 성공 ${result.successfulReceiverUuids}")
+
+                            if (result.failureInfos != null) {
+                                myLog.d(TAG, "메시지 보내기에 일부 성공했으나, 일부 대상에게는 실패 \n${result.failureInfos}")
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        });
+
 
         KakaoLinkService.getInstance().sendScrap(context, link, serverCallbackArgs, new ResponseCallback<KakaoLinkResponse>() {
             @Override
@@ -140,6 +232,8 @@ public class KakaoTalklink {
     }
 
     private void sendKakaoTalk(String urlText, String title, String bodyText, String imgUrl) {
+
+
 
         callback = new ResponseCallback<KakaoLinkResponse>() {
             @Override
@@ -200,7 +294,7 @@ public class KakaoTalklink {
         context.startActivity(Intent.createChooser(sendIntent, context.getResources().getString(R.string.text_share_intent_chooser)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
-    private void sendDefaultFeedTemplate(String urlText, String title, String bodyText, String imgUrl) {
+    private FeedTemplate getDefaultFeedTemplate(String urlText, String title, String bodyText, String imgUrl) {
 
         myLog.e(TAG, "*** urlText: "+urlText);
         myLog.e(TAG, "*** title: "+title);
@@ -210,35 +304,18 @@ public class KakaoTalklink {
         //String newUrl = String.format("%s?url=%s", context.getResources().getString(R.string.share_url), urlText);
         Button button = new Button("자세히 보기", new Link(urlText, urlText));
 
-        FeedTemplate params = new FeedTemplate(new Content(title, imgUrl, new Link(imgUrl, imgUrl), bodyText),
+        Content content = new Content(title, imgUrl, new Link(imgUrl, imgUrl), bodyText);
+
+        ItemContent itemContent = new ItemContent();
+        Social social = new Social();
+        Button[] buttons = new Button[]{button};
+
+        FeedTemplate feedTemplate = new FeedTemplate(content,
                 new ItemContent(),
                 new Social(),
+                Arrays.asList(buttons));
 
-        List<Button> buttons = new ArrayList<>(){new Button("자세히 보기", new Link(urlText, urlText))};
-
-
-        FeedTemplate params = FeedTemplate
-                .newBuilder(ContentObject.newBuilder(title,
-                        imgUrl,
-                        LinkObject.newBuilder().setWebUrl(imgUrl)
-                                .setMobileWebUrl(imgUrl).build())
-                        .setDescrption(bodyText)
-                        .build())
-//				.setSocial(SocialObject.newBuilder().setLikeCount(286).setCommentCount(45)
-//						.setSharedCount(845).build())
-//                .addButton(new ButtonObject("이미지 보기", LinkObject.newBuilder().setWebUrl(imgUrl).setMobileWebUrl(imgUrl).build()))
-                .addButton(new ButtonObject("자세히 보기", LinkObject.newBuilder().setWebUrl(urlText).setMobileWebUrl(urlText).build()))
-//				.addButton(new ButtonObject("앱으로 보기", LinkObject.newBuilder()
-//						.setWebUrl(urlText)
-//						.setMobileWebUrl(urlText)
-//						.setAndroidExecutionParams("")
-//						.setIosExecutionParams("")
-//						.build()))
-                .build();
-
-        KakaoLinkService.getInstance().sendDefault(context, params, serverCallbackArgs, callback);
-
-
+        return feedTemplate;
     }
 
     /**
