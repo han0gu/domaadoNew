@@ -77,11 +77,17 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:${GOOGLE_PLAY_SERVICE}"
 
     // kakao
+    implementation "com.kakao.sdk:v2-user:2.13.0" // 카카오 로그인
+    implementation "com.kakao.sdk:v2-talk:2.13.0" // 친구, 메시지(카카오톡)
+    implementation "com.kakao.sdk:v2-story:2.13.0" // 카카오스토리
+    implementation "com.kakao.sdk:v2-share:2.13.0" // 메시지(카카오톡 공유)
+    implementation "com.kakao.sdk:v2-friend:2.13.0"
+
     // 카카오링크 sdk를 사용하기 위해 필요.
-    implementation group: 'com.kakao.sdk', name: 'kakaolink', version: project.KAKAO_SDK_VERSION
+//    implementation group: 'com.kakao.sdk', name: 'kakaolink', version: project.KAKAO_SDK_VERSION
 
     // 카카오톡 sdk를 사용하기 위해 필요.
-    implementation group: 'com.kakao.sdk', name: 'kakaotalk', version: project.KAKAO_SDK_VERSION
+//    implementation group: 'com.kakao.sdk', name: 'kakaotalk', version: project.KAKAO_SDK_VERSION
 }
 
 apply plugin: 'com.google.gms.google-services'
