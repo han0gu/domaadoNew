@@ -101,6 +101,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2482,5 +2483,84 @@ public class Common {
 						}
 					});
 		}
+	}
+
+	public static int countChar(String str, char c) {
+		int count = 0;
+
+		for(int i=0; i < str.length(); i++) {
+			if(str.charAt(i) == c)
+				count++;
+		}
+
+		return count;
+	}
+
+	public static String buildCallbackWithValue(String callback, HashMap<String, String> objMaps) {
+		String buildedScript = callback;
+
+		Iterator<String> keys = objMaps.keySet().iterator();
+		while(keys.hasNext()) {
+			String key = keys.next();
+			String value = objMaps.get(key);
+
+			value = !TextUtils.isEmpty(value) ? value.replaceAll("\"", "\\\\\"") : "";
+
+			buildedScript = buildedScript.replace(key, "\""+value+"\"");
+
+		}
+
+		return buildedScript;
+	}
+
+	public static String buildCallbackWithValue(String callback, String[] objs) {
+
+		return buildCallbackWithValue(callback, objs, null);
+
+	}
+
+	/**
+	 * 콜백 자바스크립트 펑션에 지정된 값을 넣고, 콜백이 존재하지 않으면 지정된 메시지를 띄운다.
+	 *
+	 * @param callback
+	 * @param objs
+	 * @param notfoundMessage
+	 * @return
+	 */
+	public static String buildCallbackWithValue(String callback, String[] objs, String notfoundMessage) {
+		String buildedScript = callback;
+
+		if(!TextUtils.isEmpty(callback)) {
+			for (int i = 0; i < countChar(callback, '$'); i++) {
+				String key = String.format(Locale.getDefault(), "$%d", i + 1);
+				String value = objs.length > i ? objs[i] : "";
+
+				value = !TextUtils.isEmpty(value) ? value.replaceAll("\"", "\\\\\"") : "";
+
+				buildedScript = buildedScript.replace(key, "\"" + value + "\"");
+			}
+
+			if (!TextUtils.isEmpty(notfoundMessage)) {
+				try {
+					String function = buildedScript.split("\\(")[0];
+					if (!TextUtils.isEmpty(function) && !TextUtils.isEmpty(buildedScript))
+						buildedScript = String.format(Locale.getDefault(), "if(typeof %s !== 'undefined') %s; else alert('%s');", function, buildedScript, notfoundMessage);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					String function = buildedScript.split("\\(")[0];
+					if (!TextUtils.isEmpty(function) && !TextUtils.isEmpty(buildedScript))
+						buildedScript = String.format(Locale.getDefault(), "if(typeof %s !== 'undefined') %s; else alert('ERROR: %s UNDEFINED');", function, buildedScript, function);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		myLog.d(TAG, "*** buildCallbackWithValue: "+buildedScript);
+
+		return buildedScript;
 	}
 }

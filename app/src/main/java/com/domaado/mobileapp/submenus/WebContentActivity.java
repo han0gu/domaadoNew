@@ -867,6 +867,23 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             public void onceCamera(String idx, String type, String seq) {
 //                if(cameraModule!=null) cameraModule.openCameraShot(idx, type, seq);
             }
+
+            @Override
+            public void openKakaoLogin(String callback) {
+                KakaoTalklink.getInstance(WebContentActivity.this).loginKakao(new Handler(msg -> {
+                    switch(msg.what) {
+                        case KakaoTalklink.KAKAO_SUCCESS:
+                            callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{"0"}));
+                            break;
+                        case KakaoTalklink.KAKAO_FAILURE:
+                            callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{"1"}));
+                            break;
+                        default:
+                            break;
+                    }
+                    return true;
+                }));
+            }
         };
 
         //handle downloading
@@ -911,6 +928,34 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 //        super.finish();
 //        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_right);
 //    }
+
+    private void webViewCallback(String callback, String ...values) {
+        callJavascriptCallBack(Common.buildCallbackWithValue(callback, values));
+    }
+
+    /**
+     *  var message = {
+     *      'action': 'bind',
+     *      'name': 'message'
+     *  };
+     *  webkit.messageHandlers.[javascriptBridge].postMessage(message);
+     *
+     *
+     * @param callbackScriptFunction
+     */
+
+    public void callJavascriptCallBack(String callbackScriptFunction) {
+        if(mWebView!=null) {
+            mWebView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWebView.loadUrl("javascript:" + callbackScriptFunction);
+                }
+            });
+        } else {
+            myLog.e(TAG, "*** WEBVIEW IS NULL!");
+        }
+    }
 
     /**
      * 웹뷰 옵션 설정

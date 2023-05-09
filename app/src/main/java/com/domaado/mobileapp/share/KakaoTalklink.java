@@ -1,5 +1,8 @@
 package com.domaado.mobileapp.share;
 
+import static com.kakao.util.helper.Utility.getPackageInfo;
+
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -14,20 +17,20 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.kakao.network.ErrorResult;
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.widget.myLog;
 import com.kakao.sdk.auth.model.OAuthToken;
+import com.kakao.sdk.common.model.ClientErrorCause;
+import com.kakao.sdk.common.util.KakaoCustomTabsClient;
 import com.kakao.sdk.friend.client.PickerClient;
 import com.kakao.sdk.friend.model.OpenPickerFriendRequestParams;
 import com.kakao.sdk.friend.model.PickerOrientation;
 import com.kakao.sdk.friend.model.PickerServiceTypeFilter;
-import com.kakao.sdk.friend.model.SelectedUsers;
 import com.kakao.sdk.friend.model.ViewAppearance;
 import com.kakao.sdk.share.ShareClient;
-import com.kakao.sdk.share.model.ImageUploadResult;
+import com.kakao.sdk.share.WebSharerClient;
 import com.kakao.sdk.talk.TalkApiClient;
-import com.kakao.sdk.talk.model.Friend;
-import com.kakao.sdk.talk.model.Friends;
-import com.kakao.sdk.talk.model.FriendsContext;
 import com.kakao.sdk.template.model.Button;
 import com.kakao.sdk.template.model.Content;
 import com.kakao.sdk.template.model.FeedTemplate;
@@ -36,25 +39,15 @@ import com.kakao.sdk.template.model.Link;
 import com.kakao.sdk.template.model.Social;
 import com.kakao.sdk.user.UserApiClient;
 import com.kakao.sdk.user.model.User;
-import com.kakao.util.helper.log.Logger;
-
-import com.domaado.mobileapp.Common;
-import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.widget.myLog;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static com.kakao.util.helper.Utility.getPackageInfo;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
@@ -67,9 +60,20 @@ public class KakaoTalklink {
     private String TAG = KakaoTalklink.class.getSimpleName();
     private Context context;
 
-    private Map<String, String> serverCallbackArgs;
+    private static KakaoTalklink kakaoTalklink;
 
     private ShareUtil shareUtil;
+
+    public static final int KAKAO_SUCCESS   = 0;
+    public static final int KAKAO_FAILURE   = 1;
+
+    public static synchronized KakaoTalklink getInstance(Context context) {
+        if(kakaoTalklink==null) {
+            kakaoTalklink = new KakaoTalklink(context);
+        }
+
+        return kakaoTalklink;
+    }
 
     public KakaoTalklink(Context context) {
         this.context = context;
@@ -92,22 +96,17 @@ public class KakaoTalklink {
         String filename = String.format("%s.png", Common.getDate("yyyyMMdd_HHmmss"));
         File file = shareUtil.getFileFromDrawable(res, cachePath, filename);
 
-        uploadImageFromFile(file.getAbsolutePath(), new Handler() {
-
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-
-                switch (msg.what) {
-                    case 0:
-                        postMessage(title, message, file.getAbsolutePath(), url);
-                        break;
-                    case 1:
-                        Toast.makeText(context, context.getResources().getString(R.string.share_upload_image_fail), Toast.LENGTH_SHORT).show();
-                        break;
-                }
+        uploadImageFromFile(file.getAbsolutePath(), new Handler(msg -> {
+            switch (msg.what) {
+                case 0:
+                    postMessage(title, message, file.getAbsolutePath(), url);
+                    break;
+                case 1:
+                    Toast.makeText(context, context.getResources().getString(R.string.share_upload_image_fail), Toast.LENGTH_SHORT).show();
+                    break;
             }
-        });
+            return true;
+        }));
 
     }
 
@@ -145,7 +144,7 @@ public class KakaoTalklink {
         });
     }
 
-    public void selectFriend() {
+    public void selectFriend(Handler handler) {
         OpenPickerFriendRequestParams openPickerFriendRequestParams = new OpenPickerFriendRequestParams(
                 "친구를 선택하세요",
                 PickerServiceTypeFilter.TALK,
@@ -162,79 +161,67 @@ public class KakaoTalklink {
                 openPickerFriendRequestParams,
                 (selectedUsers, error) -> {
                     if(error != null) {
-                        Logger.e(error.toString());
                         myLog.d(TAG, "*** selectFriend error! - "+error.toString());
                     } else {
                         myLog.d(TAG, "*** selectFriend onSuccess! - "+selectedUsers.getTotalCount());
 
-                        selectedUsers.getUsers().get(0).getUuid();
+                        if(handler!=null) {
+                            Message message = new Message();
+                            message.obj = selectedUsers.getUsers().get(0).getUuid();
+                            message.what = 0;
+
+                            handler.sendMessage(message);
+                        }
                     }
                     return null;
                 });
     }
 
-    //https://developers.kakao.com/docs/latest/ko/message/android-link
-    public void shareApp() {
+    private void sendKakaoTalk(String urlText, String title, String bodyText, String imgUrl) {
 
-        String link = "https://play.google.com/store/apps/details?id="+ context.getPackageName();
+        FeedTemplate feedTemplate = getDefaultFeedTemplate(urlText, title, bodyText, imgUrl);
 
-        // 기본적인 스크랩 템플릿을 사용하여 보내는 코드
-        Map<String, String> serverCallbackArgs = new HashMap<String, String>();
-        serverCallbackArgs.put("user_id", "${current_user_id}");
-        serverCallbackArgs.put("product_id", "${shared_product_id}");
+        if(checkKakaoTalk()) {
+            ShareClient.getInstance().shareDefault(context, feedTemplate, ((sharingResult, error) -> {
+                if(error!=null) {
+                    myLog.e(TAG, "*** Error: "+error.getMessage());
+                } else if(sharingResult!=null) {
+                    myLog.d(TAG, "*** SUCCESS: "+sharingResult.getIntent());
+                    context.startActivity(sharingResult.getIntent());
 
-        TalkApiClient.getInstance().friends((friendFriends, error) -> {
-
-            if(error != null) {
-                Logger.e(error.toString());
-                myLog.d(TAG, "*** shareApp onFailure! - "+error.toString());
-            } else if(friendFriends != null) {
-                myLog.d(TAG, "*** shareApp onSuccess! - "+friendFriends.getTotalCount());
-
-                if(friendFriends.getElements().isEmpty()) {
-                    myLog.e(TAG, "*** shareApp friends is empty!");
-                } else {
-
-
-
-                    List<String> receiverUuids;
-
-                    // 메시지 보내기
-                    TalkApiClient.getInstance().sendScrapMessage(receiverUuids, url) { result, error ->
-                        if (error != null) {
-                            myLog.e(TAG, "메시지 보내기 실패: "+error.toString());
+                    if(sharingResult.getWarningMsg().size()>0) {
+                        for(Map.Entry<String, String> entry : sharingResult.getWarningMsg().entrySet()) {
+                            myLog.w(TAG, "*** WarningMessage: " + entry.getKey()+" - "+entry.getValue());
                         }
-                        else if (result != null) {
-                            myLog.i(TAG, "메시지 보내기 성공 ${result.successfulReceiverUuids}")
+                    }
 
-                            if (result.failureInfos != null) {
-                                myLog.d(TAG, "메시지 보내기에 일부 성공했으나, 일부 대상에게는 실패 \n${result.failureInfos}")
-                            }
+                    if(sharingResult.getArgumentMsg().size()>0) {
+                        for(Map.Entry<String, String> entry : sharingResult.getArgumentMsg().entrySet()) {
+                            myLog.w(TAG, "*** ArgumentMessage: " + entry.getKey()+" - "+entry.getValue());
                         }
                     }
                 }
+                return null;
+            }));
+        } else {
+            // 카카오톡이 설치되어있지 않음.
+            Uri uri = WebSharerClient.getInstance().makeDefaultUrl(feedTemplate);
+
+            try {
+                KakaoCustomTabsClient.INSTANCE.openWithDefault(context, uri);
+            } catch(UnsupportedOperationException e) {
+                e.printStackTrace();
+                myLog.e(TAG, "*** UnsupportedOperationException: "+e.getMessage());
             }
 
-            return null;
-        });
-
-
-        KakaoLinkService.getInstance().sendScrap(context, link, serverCallbackArgs, new ResponseCallback<KakaoLinkResponse>() {
-            @Override
-            public void onFailure(ErrorResult errorResult) {
-                Logger.e(errorResult.toString());
-                myLog.d(TAG, "*** shareApp onFailure! - "+errorResult.toString());
+            // 2. CustomTabs으로 디바이스 기본 브라우저 열기
+            try {
+                KakaoCustomTabsClient.INSTANCE.open(context, uri);
+            } catch (ActivityNotFoundException e) {
+                e.printStackTrace();
+                myLog.e(TAG, "*** ActivityNotFoundException: "+e.getMessage());
             }
-
-            @Override
-            public void onSuccess(KakaoLinkResponse result) {
-                // 템플릿 밸리데이션과 쿼터 체크가 성공적으로 끝남. 톡에서 정상적으로 보내졌는지 보장은 할 수 없다. 전송 성공 유무는 서버콜백 기능을 이용하여야 한다.
-                myLog.d(TAG, "*** shareApp onSuccess! - "+result.getTemplateId());
-            }
-        });
-    }
-
-    private void sendKakaoTalk(String urlText, String title, String bodyText, String imgUrl) {
+        }
 
         // 카카오가 설치되어 있는지 확인 하는 메서드또한 카카오에서 제공 콜백 객체를 이용함
         Function2<OAuthToken, Throwable, Unit> callback = new  Function2<OAuthToken, Throwable, Unit>() {
@@ -262,29 +249,83 @@ public class KakaoTalklink {
 
                 }
             }
+
+            return null;
         }));
 
-        callback = new ResponseCallback<KakaoLinkResponse>() {
-            @Override
-            public void onFailure(ErrorResult errorResult) {
-                myLog.e(TAG, "*** onFailure: "+errorResult.getErrorMessage());
-                Toast.makeText(context, errorResult.getErrorMessage(), Toast.LENGTH_LONG).show();
-            }
+    }
 
+    /**
+     * 카카오톡 로그인 : 0 - 성공, 1 - 실패
+     * @param handler
+     */
+    public void loginKakao(Handler handler) {
+
+        Function2<OAuthToken, Throwable, Unit> callback = new  Function2<OAuthToken, Throwable, Unit>() {
             @Override
-            public void onSuccess(KakaoLinkResponse result) {
-                myLog.e(TAG, "*** onSuccess: Successfully sent KakaoLink v2 message.");
-//                Toast.makeText(context, "Successfully sent KakaoLink v2 message.", Toast.LENGTH_LONG).show();
+            public Unit invoke(OAuthToken oAuthToken, Throwable error) {
+                // 이때 토큰이 전달이 되면 로그인이 성공한 것이고 토큰이 전달되지 않았다면 로그인 실패
+                if(error!=null) {
+                    myLog.e(TAG, "*** LOGIN ERROR: " + error.getMessage());
+                    if(handler!=null) {
+                        Message message = new Message();
+                        message.what = 1;
+                        handler.sendMessage(message);
+                    }
+                } else if(oAuthToken != null) {
+                    myLog.d(TAG, "*** LOGIN SUCCESS: " + oAuthToken.toString());
+                    if(handler!=null) {
+                        Message message = new Message();
+                        message.obj = oAuthToken;
+                        message.what = 0;
+
+                        handler.sendMessage(message);
+                    }
+                }
+
+                return null;
             }
         };
 
-        serverCallbackArgs = new HashMap<>();
-        serverCallbackArgs.put("user_id", "1234");
-        serverCallbackArgs.put("title", title);
+        if(checkKakaoTalk()) {
+            UserApiClient.getInstance().loginWithKakaoTalk(context, new  Function2<OAuthToken, Throwable, Unit>() {
+                @Override
+                public Unit invoke(OAuthToken oAuthToken, Throwable error) {
 
-        //sendLink(urlText, title, bodyText, imgUrl, width, height);
-        sendDefaultFeedTemplate(urlText, title, bodyText, imgUrl);
+                    if(error!=null) {
+                        myLog.e(TAG, "*** LOGIN ERROR: "+error.getMessage());
 
+                        if(error instanceof com.kakao.sdk.common.model.ClientError) {
+                            com.kakao.sdk.common.model.ClientError clientError = (com.kakao.sdk.common.model.ClientError) error;
+                            if(clientError.getReason() == ClientErrorCause.Cancelled) {
+                                // 사용자 취소
+                                if(handler!=null) {
+                                    Message message = new Message();
+                                    message.what = 1;
+
+                                    handler.sendMessage(message);
+                                }
+                            } else {
+                                UserApiClient.getInstance().loginWithKakaoAccount(context, callback);
+                            }
+                        }
+                    } else {
+                        myLog.d(TAG, "*** LOGIN SUCCESS: " + oAuthToken.toString());
+
+                        if(handler!=null) {
+                            Message message = new Message();
+                            message.obj = oAuthToken;
+                            message.what = 0;
+
+                            handler.sendMessage(message);
+                        }
+                    }
+                    return null;
+                }
+            });
+        } else {
+            UserApiClient.getInstance().loginWithKakaoAccount(context, callback);
+        }
     }
 
     private  void updateKakaoLoginUi(){
@@ -405,5 +446,9 @@ public class KakaoTalklink {
             }
         }
         return null;
+    }
+
+    public boolean checkKakaoTalk() {
+        return ShareClient.getInstance().isKakaoTalkSharingAvailable(context);
     }
 }

@@ -86,6 +86,11 @@ public class JavaScriptInterface {
         if(handleUiListener!=null) handleUiListener.sendShare(target, title, message, imageUrl, link);
     }
 
+    @JavascriptInterface
+    public void openKakaoLogin(String callback) {
+        if(handleUiListener!=null) handleUiListener.openKakaoLogin(callback);
+    }
+
     private void alertMessage(final String title, final String message, final String okString, final String noString, final boolean isCancel, final Handler handler) {
         activity.runOnUiThread(new Runnable() {
             @Override

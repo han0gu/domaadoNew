@@ -9,4 +9,6 @@ public interface HandleUiListener {
     void sendShare(int target, String title, String message, String imageUrl, String linkUrl);
     void openCamera(String idx, String type);
     void onceCamera(String idx, String type, String seq);
+
+    default void openKakaoLogin(String callback) {}
 }
