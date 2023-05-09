@@ -30,6 +30,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.domaado.mobileapp.share.KakaoTalklink;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.domaado.mobileapp.data.CheckUpdateResponse;
 import com.domaado.mobileapp.data.QueryParams;
@@ -41,6 +42,7 @@ import com.domaado.mobileapp.submenus.WebContentActivity;
 import com.domaado.mobileapp.task.CheckUpdateTask;
 import com.domaado.mobileapp.widget.CustomAlertDialog;
 import com.domaado.mobileapp.widget.myLog;
+import com.kakao.sdk.common.KakaoSdk;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -87,6 +89,10 @@ public class SplashScreen extends AppCompatActivity {
 		int imagesToShow[] = { R.drawable.screen };
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+
+		myLog.i(TAG, "*** KAKAOTALK HASH KEY: "+ KakaoTalklink.getInstance(this).getKeyHash());
+
+		KakaoSdk.init(this, getResources().getString(R.string.kakao_app_key));
 
 		setAnimationInit();
 		animate(demoImage, imagesToShow, 0, false);
@@ -903,21 +909,23 @@ public class SplashScreen extends AppCompatActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
 		boolean isFailGranted = false;
 
-		if(requestCode == MY_PERMISSION_REQUEST) {
-			for(int i=0; i < grantResults.length; i++) {
-				if(grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-					myLog.d(TAG, "*** onRequestPermissionsResult: "+permissions[i]+", i="+i);
+		if (requestCode == MY_PERMISSION_REQUEST) {
+			for (int i = 0; i < grantResults.length; i++) {
+				if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+					myLog.d(TAG, "*** onRequestPermissionsResult: " + permissions[i] + ", i=" + i);
 					isFailGranted = true;
 					break;
 				}
 			}
 
-			if(isFailGranted) {
-				if(permissionHandler != null) permissionHandler.sendEmptyMessage(1);
+			if (isFailGranted) {
+				if (permissionHandler != null) permissionHandler.sendEmptyMessage(1);
 			} else {
-				if(permissionHandler != null) permissionHandler.sendEmptyMessage(0);
+				if (permissionHandler != null) permissionHandler.sendEmptyMessage(0);
 			}
 		}
 	}

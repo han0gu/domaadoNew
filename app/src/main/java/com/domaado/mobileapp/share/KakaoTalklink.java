@@ -267,6 +267,12 @@ public class KakaoTalklink {
                 // 이때 토큰이 전달이 되면 로그인이 성공한 것이고 토큰이 전달되지 않았다면 로그인 실패
                 if(error!=null) {
                     myLog.e(TAG, "*** LOGIN ERROR: " + error.getMessage());
+                    if(error instanceof com.kakao.sdk.common.model.ClientError) {
+                        com.kakao.sdk.common.model.ClientError clientError = (com.kakao.sdk.common.model.ClientError) error;
+                        if (clientError.getReason() == ClientErrorCause.Cancelled) {
+                            return null;
+                        }
+                    }
                     if(handler!=null) {
                         Message message = new Message();
                         message.what = 1;
