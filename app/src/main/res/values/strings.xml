@@ -89,7 +89,7 @@
     <string name="permission_phonenumber_message">신속한 사용자 인증을 위하여 전화기의 전화번호를 확인합니다.</string>
 
     <string name="url_site" translatable="false">https://domaado.me</string>
-    <string name="url_site_test" translatable="false">https://test.domaado.me/test</string>
+    <string name="url_site_test" translatable="false">https://test.domaado.me</string>
     <string name="path" translatable="false">/Domaado</string>
 
     <!-- Server Urls -->
