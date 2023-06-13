@@ -893,27 +893,33 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                                         String contentDisposition, String mimeType,
                                         long contentLength) {
 
-                myLog.e(TAG, "*** onDownloadStart: "+url);
+                try {
+                    myLog.e(TAG, "*** onDownloadStart: " + url);
 
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-                request.setMimeType(mimeType);
+                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                    request.setMimeType(mimeType);
 
 //                String cookies = CookieManager.getInstance().getCookie(url);
 //                request.addRequestHeader("cookie", cookies);
 
-                request.addRequestHeader("User-Agent", userAgent);
-                request.setDescription("Downloading File...");
-                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType));
-                request.allowScanningByMediaScanner();
-                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                request.setDestinationInExternalPublicDir(
-                        Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(
-                                url, contentDisposition, mimeType));
-                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                dm.enqueue(request);
+                    request.addRequestHeader("User-Agent", userAgent);
+                    request.setDescription("Downloading File...");
+                    request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType));
+                    request.allowScanningByMediaScanner();
+                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                    request.setDestinationInExternalPublicDir(
+                            Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(
+                                    url, contentDisposition, mimeType));
+                    DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                    dm.enqueue(request);
 
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_downloading_message), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.file_downloading_message), Toast.LENGTH_LONG).show();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    myLog.e(TAG, "*** Exception: "+e.getMessage());
 
+                    Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }});
 
         mWebView.addJavascriptInterface(new JavaScriptInterface(this, mWebView, handleUiListener), Constant.WEBVIEW_BRIDGE_PREFIX);

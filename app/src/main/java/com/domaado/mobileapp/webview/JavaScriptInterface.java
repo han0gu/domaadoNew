@@ -2,7 +2,11 @@ package com.domaado.mobileapp.webview;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.view.KeyEvent;
@@ -11,9 +15,12 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 
+import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.R;
 import com.domaado.mobileapp.widget.CustomAlertDialog;
 import com.domaado.mobileapp.widget.myLog;
+
+import java.io.File;
 
 /**
  * Created by HongEuiChan on 2017. 9. 11..
@@ -179,5 +186,73 @@ public class JavaScriptInterface {
             }
         });
 
+    }
+
+    /**
+     *
+     * @param domain
+     * @param channel
+     */
+    @JavascriptInterface
+    public void openYoutube(String domain, String channel) {
+        // https://www.youtube.com/@domaado
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String url = domain + File.separator + channel;
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setPackage("com.google.android.youtube");
+                intent.setData(Uri.parse(url));
+
+                try {
+                    activity.startActivity(intent);
+                } catch(ActivityNotFoundException e) {
+                    e.printStackTrace();
+                    openBroswer(url);
+                }
+            }
+        });
+    }
+
+    /**
+     *
+     * @param domain
+     * @param channel
+     */
+    @JavascriptInterface
+    public void openInstagram(String domain, String channel) {
+        // https://www.instagram.com/domado_official/
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String url = domain + File.separator + "_u" + channel;
+
+                Uri uri = Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setComponent(new ComponentName("com.instagram.android",
+                        "com.instagram.android.activity.UrlHandlerActivity"));
+
+                try {
+                    activity.startActivity(intent);
+                } catch(ActivityNotFoundException e) {
+                    e.printStackTrace();
+                    openBroswer(domain + File.separator + channel);
+                }
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void openBroswer(String url) {
+        myLog.d(TAG, "*** openBroswer - open browser url: "+url);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Common.openBrowser(activity, url);
+            }
+        });
     }
 }
