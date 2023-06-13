@@ -210,7 +210,7 @@ public class JavaScriptInterface {
                     activity.startActivity(intent);
                 } catch(ActivityNotFoundException e) {
                     e.printStackTrace();
-                    openBroswer(url);
+                    openBrowser(url);
                 }
             }
         });
@@ -239,14 +239,14 @@ public class JavaScriptInterface {
                     activity.startActivity(intent);
                 } catch(ActivityNotFoundException e) {
                     e.printStackTrace();
-                    openBroswer(domain + File.separator + channel);
+                    openBrowser(domain + File.separator + channel);
                 }
             }
         });
     }
 
     @JavascriptInterface
-    public void openBroswer(String url) {
+    public void openBrowser(String url) {
         myLog.d(TAG, "*** openBroswer - open browser url: "+url);
         activity.runOnUiThread(new Runnable() {
             @Override
