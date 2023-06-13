@@ -33,6 +33,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
@@ -1562,6 +1563,16 @@ public class Common {
 		}
 
 		return bitmap;
+	}
+
+	public static Uri getBitmapToUri(Context context, Bitmap bitmap, String title) {
+		if(TextUtils.isEmpty(title)) title = context.getResources().getString(R.string.app_name);
+
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+		String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, title, null);
+
+		return Uri.parse(path);
 	}
 
 	public static boolean removeFile(Context ctx, String filename) {

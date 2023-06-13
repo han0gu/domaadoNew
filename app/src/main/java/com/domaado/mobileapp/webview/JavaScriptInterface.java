@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.widget.Toast;
 
 
 import com.domaado.mobileapp.Common;
@@ -252,6 +254,28 @@ public class JavaScriptInterface {
             @Override
             public void run() {
                 Common.openBrowser(activity, url);
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void shareImage(String mimetype, String base64String, String title) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Bitmap bitmap = Common.getBase64decodeImage(base64String);
+                    Uri uri = Common.getBitmapToUri(activity, bitmap, title);
+
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                    shareIntent.setType(mimetype); // "image/jpeg"
+                    activity.startActivity(Intent.createChooser(shareIntent, activity.getResources().getText(R.string.send_to_title)));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
