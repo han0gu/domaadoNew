@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -259,18 +260,42 @@ public class JavaScriptInterface {
     }
 
     @JavascriptInterface
-    public void shareImage(String mimetype, String base64String, String title) {
+    public void shareImage(String mimetype, final String base64String, String title) {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Bitmap bitmap = Common.getBase64decodeImage(base64String);
+
+//                    myLog.e(TAG, "*** shareImage mimetype: "+mimetype);
+//                    myLog.e(TAG, "*** shareImage base64String: "+base64String);
+//                    myLog.e(TAG, "*** shareImage title: "+title);
+
+                    String base64 = base64String;
+                    String checkedMimeType = mimetype;
+
+                    if(!TextUtils.isEmpty(base64String) && base64String.startsWith("data:")) {
+                        String[] base64splits = base64String.split(",");
+                        try {
+                            checkedMimeType = base64splits[0].split(":")[1].split(";")[0];
+                            myLog.e(TAG, "*** shareImage checkedMimeType: "+checkedMimeType);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        base64 = base64splits[1];
+                    }
+
+                    Bitmap bitmap = Common.getBase64decodeImage(base64);
+
+                    myLog.e(TAG, "*** shareImage bitmap: "+(bitmap!=null ? bitmap.getByteCount() : "null"));
+
                     Uri uri = Common.getBitmapToUri(activity, bitmap, title);
+
+                    myLog.e(TAG, "*** shareImage uri: "+(uri!=null ? uri.toString() : "null"));
 
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                    shareIntent.setType(mimetype); // "image/jpeg"
+                    shareIntent.setType(checkedMimeType); // "image/jpeg"
                     activity.startActivity(Intent.createChooser(shareIntent, activity.getResources().getText(R.string.send_to_title)));
                 } catch(Exception e) {
                     e.printStackTrace();

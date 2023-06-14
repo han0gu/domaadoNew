@@ -37,6 +37,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
@@ -1545,6 +1546,7 @@ public class Common {
 		return bitmap;
 	}
 
+	@Nullable
 	public static Bitmap getBitmapFromPath(Context ctx, String filename) {
 		Bitmap bitmap = null;
 
