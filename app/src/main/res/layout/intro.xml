@@ -6,7 +6,15 @@
     android:layout_height="match_parent">
 
     <!-- 백그라운드 이미지 시작 -->
-
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        app:lottie_rawRes="@raw/domado_splashscreen"
+        app:lottie_loop="true"
+        app:lottie_autoPlay="true"
+        android:background="@drawable/trans_space"
+        />
 
     <!-- 하단에 잠시만 기다려주세요 텍스트 시작 -->
     <!-- 하단에 잠시만 기다려주세요 텍스트 끝 -->
@@ -15,7 +23,8 @@
         android:id="@+id/intro_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/White">
+        android:background="@drawable/trans_space"
+        android:visibility="gone">
 
         <LinearLayout
             android:id="@+id/intro_logo_box"

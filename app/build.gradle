@@ -76,6 +76,8 @@ dependencies {
 
     implementation "com.google.android.gms:play-services-location:${GOOGLE_PLAY_SERVICE}"
 
+    implementation 'com.airbnb.android:lottie:5.0.2'
+
     // kakao
     implementation "com.kakao.sdk:v2-user:2.13.0" // 카카오 로그인
     implementation "com.kakao.sdk:v2-talk:2.13.0" // 친구, 메시지(카카오톡)
