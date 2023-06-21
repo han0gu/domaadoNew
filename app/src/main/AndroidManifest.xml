@@ -43,6 +43,156 @@
 
     <queries>
         <package android:name="com.kakao.talk" />
+
+<!--        <package android:name="instagram" />-->
+<!--        <package android:name="youtube" />-->
+<!--        <package android:name="kftc-bankpay" />-->
+<!--        <package android:name="ispmobile" />-->
+<!--        <package android:name="shinhan-sr-ansimclick" />-->
+<!--        <package android:name="smshinhanansimclick" />-->
+<!--        <package android:name="hdcardappcardansimclick" />-->
+<!--        <package android:name="smhyundaiansimclick" />-->
+<!--        <package android:name="mpocket.online.ansimclick" />-->
+<!--        <package android:name="scardcertiapp" />-->
+<!--        <package android:name="cloudpay" />-->
+<!--        <package android:name="nhappcardansimclick" />-->
+<!--        <package android:name="nonghyupcardansimclick" />-->
+<!--        <package android:name="kb-acp" />-->
+<!--        <package android:name="lotteappcard" />-->
+<!--        <package android:name="lottesmartpay" />-->
+<!--        <package android:name="citispay" />-->
+<!--        <package android:name="shinsegaeeasypayment" />-->
+<!--        <package android:name="kakaotalk" />-->
+<!--        <package android:name="tswansimclick" />-->
+<!--        <package android:name="nhallonepayansimclick" />-->
+<!--        <package android:name="citimobileapp" />-->
+<!--        <package android:name="payco" />-->
+<!--        <package android:name="hanaskcardmobileportal" />-->
+<!--        <package android:name="wooripay" />-->
+<!--        <package android:name="lpayapp" />-->
+<!--        <package android:name="hanawalletmembers" />-->
+<!--        <package android:name="tauthlink" />-->
+<!--        <package android:name="ktauthexternalcall" />-->
+<!--        <package android:name="upluscorporation" />-->
+<!--        <package android:name="liivbank" />-->
+<!--        <package android:name="kb-bankpay" />-->
+<!--        <package android:name="naversearchthirdlogin" />-->
+<!--        <package android:name="lmslpay" />-->
+<!--        <package android:name="com.wooricard.wcard" />-->
+<!--        <package android:name="newliiv" />-->
+<!--        <package android:name="NewSmartPib" />-->
+<!--        <package android:name="kbbank" />-->
+<!--        <package android:name="itms-apps" />-->
+<!--        <package android:name="ansimclickscard" />-->
+<!--        <package android:name="ansimclickipcollect" />-->
+<!--        <package android:name="vguardstart" />-->
+<!--        <package android:name="samsungpay" />-->
+<!--        <package android:name="nhappvardansimclick" />-->
+<!--        <package android:name="citicardappkr" />-->
+<!--        <package android:name="kakaopay" />-->
+<!--        <package android:name="paypin" />-->
+<!--        <package android:name="paycoapplogin" />-->
+<!--        <package android:name="bankwallet" />-->
+<!--        <package android:name="uppay" />-->
+<!--        <package android:name="kpay" />-->
+<!--        <package android:name="uber" />-->
+<!--        <package android:name="tomtomhome" />-->
+<!--        <package android:name="com.sygic.aura" />-->
+<!--        <package android:name="here-route" />-->
+<!--        <package android:name="moovit" />-->
+<!--        <package android:name="lyft" />-->
+<!--        <package android:name="cabify" />-->
+<!--        <package android:name="lguthepay" />-->
+<!--        <package android:name="lguthepay-xpay" />-->
+<!--        <package android:name="smartxpay-transfer" />-->
+<!--        <package android:name="SmartBank2WIB" />-->
+<!--        <package android:name="PortalCenterWB" />-->
+<!--        <package android:name="woorimembers" />-->
+<!--        <package android:name="wibeetalk" />-->
+<!--        <package android:name="nhappcash-acp" />-->
+<!--        <package android:name="smilepayapp" />-->
+<!--        <package android:name="nhappcardansimclick" />-->
+<!--        <package android:name="smartxpay-transfer" />-->
+<!--        <package android:name="supertoss" />-->
+<!--        <package android:name="chai" />-->
+<!--        <package android:name="baidumap" />-->
+<!--        <package android:name="ukbanksmartbanknonloginpay" />-->
+<!--        <package android:name="smilepay" />-->
+<!--        <package android:name="kdb-bankpay" />-->
+<!--        <package android:name="ibk-bankpay" />-->
+<!--        <package android:name="keb-bankpay" />-->
+<!--        <package android:name="sh-bankpay" />-->
+<!--        <package android:name="nhb-bankpay" />-->
+<!--        <package android:name="nh-bankpay" />-->
+<!--        <package android:name="wr-bankpay" />-->
+<!--        <package android:name="sc-bankpay" />-->
+<!--        <package android:name="s-bankpay" />-->
+<!--        <package android:name="ct-bankpay" />-->
+<!--        <package android:name="dg-bankpay" />-->
+<!--        <package android:name="bnk-bankpay" />-->
+<!--        <package android:name="kj-bankpay" />-->
+<!--        <package android:name="jj-bankpay" />-->
+<!--        <package android:name="kn-bankpay" />-->
+<!--        <package android:name="kp-bankpay" />-->
+<!--        <package android:name="cu-bankpay" />-->
+<!--        <package android:name="mg-bankpay" />-->
+<!--        <package android:name="kbn-bankpay" />-->
+<!--        <package android:name="kkb-bankpay" />-->
+<!--        <package android:name="mapsme" />-->
+<!--        <package android:name="tmap" />-->
+<!--        <package android:name="kakaomap" />-->
+<!--        <package android:name="kakaonavi" />-->
+<!--        <package android:name="daummaps" />-->
+<!--        <package android:name="maps" />-->
+<!--        <package android:name="citymapper" />-->
+<!--        <package android:name="comgooglemaps" />-->
+<!--        <package android:name="navigon" />-->
+<!--        <package android:name="transit" />-->
+<!--        <package android:name="waze" />-->
+<!--        <package android:name="yandexnavi" />-->
+<!--        <package android:name="uplusauth" />-->
+<!--        <package android:name="storylink" />-->
+<!--        <package android:name="kakaokompassauth" />-->
+<!--        <package android:name="storykompassauth" />-->
+<!--        <package android:name="kakaolink" />-->
+<!--        <package android:name="kakaotalk-5.9.7" />-->
+<!--        <package android:name="kakaostory-2.9.0" />-->
+<!--        <package android:name="daumapps" />-->
+<!--        <package android:name="googlechromes" />-->
+<!--        <package android:name="fb" />-->
+<!--        <package android:name="fbapi" />-->
+<!--        <package android:name="fb-messenger-api" />-->
+<!--        <package android:name="fbauth2" />-->
+<!--        <package android:name="fbshareextension" />-->
+<!--        <package android:name="bandapp" />-->
+<!--        <package android:name="naversearchthirdlogin" />-->
+<!--        <package android:name="nidlogin" />-->
+
+        <!-- 제3자 보험금청구에서 갤러리 호출 이슈! -->
+        <!-- Browser -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <!-- Camera -->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <!-- Gallery -->
+        <intent>
+            <action android:name="android.intent.action.GET_CONTENT" />
+            <data android:mimeType="image/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.PICK" />
+            <data android:mimeType="image/*" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CHOOSER" />
+        </intent>
+        <intent>
+            <action android:name="*" />
+        </intent>
     </queries>
 
     <application
