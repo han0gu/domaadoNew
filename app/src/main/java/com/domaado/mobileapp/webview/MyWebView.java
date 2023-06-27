@@ -18,6 +18,7 @@ import com.domaado.mobileapp.widget.myLog;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
  * Created by kbins(James Hong) on 2018,November,26
  */
@@ -88,7 +89,10 @@ public class MyWebView extends WebView {
         WebSettings s = getSettings();
         setScrollBarStyle(ScrollView.SCROLLBARS_OUTSIDE_OVERLAY);
 
-        s.setUserAgentString(Constant.WEBVIEW_USER_AGENT);
+        if(!TextUtils.isEmpty(s.getUserAgentString()) && !s.getUserAgentString().contains(Constant.WEBVIEW_USER_AGENT)) {
+            s.setUserAgentString(s.getUserAgentString()+" "+Constant.WEBVIEW_USER_AGENT);
+        }
+
         s.setJavaScriptCanOpenWindowsAutomatically(true);
         s.setLoadsImagesAutomatically(true);
         s.setDomStorageEnabled(true);

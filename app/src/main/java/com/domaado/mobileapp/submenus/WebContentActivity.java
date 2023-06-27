@@ -83,6 +83,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
     private String TAG = WebContentActivity.class.getSimpleName();
 
     private MyWebView mWebView;
+
     public ValueCallback mFileCallback;
     public static final int FILECHOOSE_CALLBACK         = 100;
     public static final int FILECHOOSER_NORMAL_REQ_CODE = 200;
@@ -809,6 +810,47 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         }));
 
         /**
+         * BOOTPAY INTERFACE
+         */
+//        mWebView.setOnResponseListener(new EventListener() {
+//            @Override
+//            public void onError(String data) {
+//                myLog.e(TAG, "*** onError: "+data);
+//            }
+//
+//            @Override
+//            public void onCancel(String data) {
+//                myLog.e(TAG, "*** onCancel: "+data);
+//            }
+//
+//            @Override
+//            public void onClose(String data) {
+//                myLog.e(TAG, "*** onClose: "+data);
+//            }
+//
+//            @Override
+//            public void onReady(String data) {
+//                myLog.d(TAG, "*** onReady: "+data);
+//            }
+//
+//            @Override
+//            public void onConfirm(String data) {
+//                myLog.d(TAG, "*** onConfirm: "+data);
+//                boolean iWantPay = true;
+//                if(iWantPay == true) { // 재고가 있을 경우
+//                    callJavascriptCallBack("BootPay.transactionConfirm( " + data + ");");
+//                } else {
+//                    callJavascriptCallBack("BootPay.removePaymentWindow();");
+//                }
+//            }
+//
+//            @Override
+//            public void onDone(String data) {
+//                myLog.d(TAG, "*** onDone: "+data);
+//            }
+//        });
+
+        /**
          * MyWebview에서 처리함.
          */
 //        setWebViewOptions();
@@ -971,7 +1013,10 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         WebSettings s = mWebView.getSettings();
         mWebView.setScrollBarStyle(ScrollView.SCROLLBARS_OUTSIDE_OVERLAY);
 
-        s.setUserAgentString(Constant.WEBVIEW_USER_AGENT);
+        if(!TextUtils.isEmpty(s.getUserAgentString()) && !s.getUserAgentString().contains(Constant.WEBVIEW_USER_AGENT)) {
+            s.setUserAgentString(s.getUserAgentString()+" "+Constant.WEBVIEW_USER_AGENT);
+        }
+
         s.setJavaScriptCanOpenWindowsAutomatically(true);
         s.setLoadsImagesAutomatically(true);
         s.setDomStorageEnabled(true);

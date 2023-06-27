@@ -139,6 +139,8 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
 //        return super.shouldOverrideUrlLoading(view, request);
 //    }
 
+    private boolean override = false;
+
     private boolean procShouldOverrideUrlLoading(WebView view, String url, WebResourceRequest request) {
 
         myLog.i(TAG,"*** procShouldOverrideUrlLoading : "+url);
@@ -365,6 +367,324 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
 //            }
 
 //            return true;
+
+        } else if (url.startsWith("geo:") || url.startsWith(WebView.SCHEME_MAILTO)) {
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                mActivity.startActivity(i);
+                override = false;
+            } catch (android.content.ActivityNotFoundException e) {
+                myLog.e(TAG, "Error with " + url + ": " + e.toString());
+            }
+        }
+
+        // yellowin url start 예외처리구문
+        else if (url != null // && !url.equals("ansimclick.hyundiacard.com") && !url.contains("naver") &&
+                && (url.contains("http://market.android.com")
+                || url.contains("market://")
+                || url.contains("intent")
+                || url.contains("com.kftc.bankpay.android://")
+                || url.contains("com.lotte.lottesmartpay://")
+                || url.contains("com.ahnlab.v3mobileplus://")
+                || url.contains("hanaansim://")
+                || url.contains("vguard://")
+                || url.contains("droidxantivirus://")
+                || url.contains("smshinhancardusim://")
+                || url.contains("smartwall://")
+                || url.contains("appfree://")
+
+                || url.contains("kb-acp://")
+                || url.contains("lguthepay://")
+                || url.contains("v3mobile://")
+                || url.contains("kakaopay://")
+
+                || url.contains("kftc-bankpay://")
+                || url.contains("ispmobile://")
+                || url.contains("hdcardappcardansimclick://")
+                || url.contains("smhyundaiansimclick://")
+                || url.contains("shinhan-sr-ansimclick://")
+                || url.contains("smshinhanansimclick://")
+                || url.contains("nonghyupcardansimclick://")
+                || url.contains("kb-acp://")
+                || url.contains("mpocket.online.ansimclick://")
+                || url.contains("ansimclickscard://")
+                || url.contains("ansimclickipcollect://")
+                || url.contains("vguardstart://")
+                || url.contains("samsungpay://")
+                || url.contains("scardcertiapp://")
+                || url.contains("lottesmartpay://")
+                || url.contains("lotteappcard://")
+                || url.contains("cloudpay://")
+                || url.contains("nhappvardansimclick://")
+                || url.contains("nhappcardansimclick://")
+                || url.contains("nhallonepayansimclick://")
+                || url.contains("citispay://")
+                || url.contains("citimobileapp://")
+                || url.contains("citicardappkr://")
+                || url.contains("payco://")
+                || url.contains("paypin://")
+                || url.contains("paycoapplogin://")
+                || url.contains("tswansimclick://")
+                || url.contains("bankwallet://")
+                || url.contains("uppay://")
+                || url.contains("kpay://")
+                || url.contains("smilepayapp://")
+                || url.contains("maps://")
+                || url.contains("citymapper://")
+                || url.contains("comgooglemaps://")
+                || url.contains("navigon://")
+                || url.contains("transit://")
+                || url.contains("waze://")
+                || url.contains("yandexnavi://")
+                || url.contains("uber://")
+                || url.contains("tomtomhome://")
+                || url.contains("com.sygic.aura://")
+                || url.contains("here-route://")
+                || url.contains("moovit://")
+                || url.contains("lyft://")
+                || url.contains("mapsme://")
+                || url.contains("cabify://")
+                || url.contains("baidumap://")
+                || url.contains("lguthepay://")
+                || url.contains("smartxpay-transfer://")
+                || url.contains("smilepay://")
+                || url.contains("supertoss://")
+                || url.contains("hanawalletmembers://")
+                || url.contains("wooripay://")
+                || url.contains("shinsegaeeasypayment://")
+                || url.contains("lpayapp://")
+                || url.contains("lmslpay://")
+                || url.contains("chai://")
+                || url.contains("intmoney://")
+                || url.contains("hanaskcardmobileportal://")
+                || url.contains("ukbanksmartbanknonloginpay://")
+                || url.contains("kdb-bankpay://")
+                || url.contains("ibk-bankpay://")
+                || url.contains("kb-bankpay://")
+                || url.contains("keb-bankpay://")
+                || url.contains("sh-bankpay://")
+                || url.contains("nhb-bankpay://")
+                || url.contains("nh-bankpay://")
+                || url.contains("wr-bankpay://")
+                || url.contains("sc-bankpay://")
+                || url.contains("s-bankpay://")
+                || url.contains("ct-bankpay://")
+                || url.contains("dg-bankpay://")
+                || url.contains("bnk-bankpay://")
+                || url.contains("kj-bankpay://")
+                || url.contains("jj-bankpay://")
+                || url.contains("kn-bankpay://")
+                || url.contains("kp-bankpay://")
+                || url.contains("cu-bankpay://")
+                || url.contains("mg-bankpay://")
+                || url.contains("kbn-bankpa://y")
+                || url.contains("kkb-bankpay://")
+
+                // || url.contains("ansimclick")
+                // || (url.contains("ansimclick") && !url.equals("ansimclick.hyundiacard.com"))
+                || url.contains("market://details?id=com.shcard.smartpay")
+                || url.contains("http://m.ahnlab.com/kr/site/download")
+                || url.endsWith(".apk")
+
+                // 본인인증
+                || url.contains("tauthlink://")
+                || url.contains("ktauthexternalcall://")
+                || url.contains("upluscorporation://")
+
+                || url.contains("line://")// 라인
+                || url.contains("bandapp://")// 네이버 밴드
+                || url.contains("kakaotalk://")// 카카오톡
+                || url.contains("storylink://")
+                || url.contains("kakaoplus://")
+                || url.contains("kakaokompassauth://")
+                || url.contains("storykompassauth://")
+                || url.contains("kakaolink://")
+                || url.contains("kakaotalk-5.9.7://")
+                || url.contains("kakaostory-2.9.0://")
+                || url.contains("naversearchapp")// 네이버앱
+                || url.contains("naversearchthirdlogin")
+                || (url.contains("nidlogin") && !url.contains("naver.com"))
+                || url.contains("daumapps://open")// 다음
+                || url.contains("googlechromes://")// 크롬
+                || url.contains("fb://")// 페이스북
+                || url.contains("fbapi://")
+                || url.contains("fb-messenger-api://")
+                || url.contains("fbauth2://")
+                || url.contains("fbshareextension://"))) {
+            myLog.d(TAG, "yellowin url scheme 11111 " + url);
+            try {
+                // Intent intent = new Intent();
+                try {
+                    intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                    myLog.d(TAG, "yellowin url scheme aaaaaaa " + url);
+                } catch (java.net.URISyntaxException ex) {
+                    ex.printStackTrace();
+                    myLog.d(TAG, "yellowin url scheme eeeeeee " + ex.getMessage());
+                    override = false;
+                }
+
+                try {
+                    mActivity.startActivity(intent);
+                    override = true;
+                } catch (android.content.ActivityNotFoundException e) {
+                    // chrome Version type
+                    myLog.d(TAG, "yellowin url scheme bbbbbb " + e.getMessage());
+
+                    if (mActivity.getPackageManager().resolveActivity(intent, 0) == null) {
+                        myLog.d(TAG, "yellowin url scheme 33333 " + url);
+                        String packagename = intent.getPackage();
+                        if (packagename != null) {
+                            Uri uri = Uri.parse("market://search?q=pname:" + packagename);
+                            intent = new Intent(Intent.ACTION_VIEW, uri);
+                            mActivity.startActivity(intent);
+                            override = true;
+                        }
+                    } else {
+                        myLog.d(TAG, "yellowin url scheme 44444 " + url);
+                        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                        intent.setComponent(null);
+                        try {
+                            if (mActivity.startActivityIfNeeded(intent, -1)) {
+                                override = true;
+                            }
+                        } catch (android.content.ActivityNotFoundException ex) {
+                            override = false;
+                        }
+                    }
+                    myLog.d(TAG, "yellowin url scheme 44444 " + url);
+                    override = true;
+                }
+            } catch (android.content.ActivityNotFoundException ee) {
+                // Log.e("error ===>", e.getMessage());
+                myLog.e("yellowin url", "yellowin url scheme ssssssss ");
+                ee.printStackTrace();
+                override = false;
+            }
+        } else if (url.contains("domaado.me")
+
+                // tags.bluekai.com
+                || url.contains("tags.bluekai.com")
+                || url.contains("astg.widerplanet.com")
+
+                // https://pf.kakao.com
+                // || url.contains("pf.kakao.com") // 카카오 채널...
+                || url.contains("nid.naver.com")
+                || url.contains("accounts.kakao.com")
+                || url.contains("kauth.kakao.com")
+                || url.contains("api.twitter.com")
+                || (url.contains("facebook.com") && url.contains("oauth"))
+                || url.contains("accounts.google.com")
+                || url.contains("account/login")
+
+                || url.contains("drmobile.inicis.com")
+                || url.contains("mobilians.co.kr")
+                || url.contains("alipay.com")
+                || url.contains("allpayx.com")
+                || url.contains("fcmobile.inicis.com")
+                || url.contains("http://aio.best")
+                || url.contains("smpay.kcp.co.kr")
+                || url.contains("kcp.co.kr")
+                || url.contains("ansimclick.hyundiacard.com")
+                || url.contains("allatpay.com")
+                || url.contains("xpay.lgdacom.net")
+                || url.contains("pg-web.kakao.com") // 카카오
+                // || url.contains("kakao.com")
+                || url.contains("shinhancard.com")
+                || url.contains("hyundaicard.com")
+                || url.contains("ssgpay.com")
+                || url.contains("payco.com")
+                || url.contains("lpay.com")
+                || url.contains("inicis.com")
+                || url.contains("vpay.co.kr")
+                || url.contains("bootpay.co.kr")
+                || url.contains("allatpay.com")
+                || url.contains("smilepay.co.kr")
+                || url.contains("nicepay.co.kr")
+                || url.contains("teledit.com")
+
+                || url.contains("eximbay.com")
+                || url.contains("paypal.com")
+                || url.contains("paypalobjects.com")
+                || url.contains("tpay.co.kr")
+                || url.contains("uplus.co.kr")
+                || url.contains("bankpay.or.kr")
+                || url.contains("ksmobile.inicis.com")
+                // || url.contains("kftc-bankpay")
+                || url.contains("allthegate.com")
+                || url.contains("iamport.kr")
+                || url.contains("pay.toss")
+                || url.contains("samsungcard.co.kr")
+                || url.contains("samsungcard.com")
+                || url.contains("samsungcard-ad.com")
+                || url.contains("nonghyup.com")
+                || url.contains("pay.tosspayments.com/card")
+                || url.contains("acs.hanacard.co.kr")
+                || url.contains("tosspayments.com")
+                || url.contains("pay.naver.com")
+                || url.contains("pstatic.net")
+                || url.contains("paymentwall.com")
+                || url.contains("pay.kakao.com")
+                || url.contains("welcomepayments.co.kr")
+                || url.contains("payletter.com")
+                || url.contains("easypay.co.kr")
+                || url.contains("citibank.co.kr")
+                || url.contains("godo.co.kr")
+                || url.contains("godomall.com")) {
+            myLog.d(TAG, "yellowin url yes : " + url);
+
+            override = false;
+        }
+        // If sms:5551212?body=This is the message
+        else if (url.startsWith("sms:")) {
+            try {
+                intent = new Intent(Intent.ACTION_VIEW);
+                // Get address
+                String address = null;
+                int parmIndex = url.indexOf('?');
+                if (parmIndex == -1) {
+                    address = url.substring(4);
+                } else {
+                    address = url.substring(4, parmIndex);
+
+                    // If body, then set sms body
+                    Uri uri = Uri.parse(url);
+                    String query = uri.getQuery();
+                    if (query != null) {
+                        if (query.startsWith("body=")) {
+                            intent.putExtra("sms_body", query.substring(5));
+                        }
+                    }
+                }
+                intent.setData(Uri.parse("sms:" + address));
+                intent.putExtra("address", address);
+                intent.setType("vnd.android-dir/mms-sms");
+                mActivity.startActivity(intent);
+                override = true;
+            } catch (android.content.ActivityNotFoundException e) {
+                myLog.e(TAG, "Error sending sms " + url + ":" + e.toString());
+            }
+        } else if (url != null) {
+            myLog.d(TAG, "yellowin url no : " + url);
+            try {
+                try {
+                    intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                    mActivity.startActivity(intent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Uri uri = Uri.parse(url);
+                intent = new Intent(Intent.ACTION_VIEW, uri);
+                mActivity.startActivity(intent);
+
+                override = true;
+
+            } catch (android.content.ActivityNotFoundException e) {
+                e.printStackTrace();
+                override = false;
+            }
+            myLog.d(TAG, "yellowin url 00000 no : " + url);
         }
 
         return false;
