@@ -687,7 +687,7 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
             myLog.d(TAG, "yellowin url 00000 no : " + url);
         }
 
-        return false;
+        return override;
     }
 
     @Override

@@ -853,7 +853,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         /**
          * MyWebview에서 처리함.
          */
-//        setWebViewOptions();
+        setWebViewOptions();
 
         mWebView.loadUrl(url);
 
@@ -1019,13 +1019,11 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
         s.setJavaScriptCanOpenWindowsAutomatically(true);
         s.setLoadsImagesAutomatically(true);
-        s.setDomStorageEnabled(true);
         if (Build.VERSION.SDK_INT >= 8 && Build.VERSION.SDK_INT <= 18) {
             s.setPluginState(WebSettings.PluginState.ON);
         }
         s.setRenderPriority(WebSettings.RenderPriority.HIGH);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        s.setDatabaseEnabled(true);
         s.setAppCacheEnabled(true);
         s.setSupportMultipleWindows(true);
         s.setDefaultTextEncodingName("UTF-8");
@@ -1046,11 +1044,15 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
         // enable Web Storage: localStorage, sessionStorage
         s.setDomStorageEnabled(true);
+        s.setAppCacheEnabled(true);
+        s.setAppCachePath(getApplicationContext().getFilesDir().getAbsolutePath() + "/cache");
+        s.setDatabaseEnabled(true);
+        s.setDatabasePath(getApplicationContext().getFilesDir().getAbsolutePath() + "/databases");
 
         // caching.
-        s.setAppCacheEnabled(true);
         s.setAppCachePath(mContext.getCacheDir().getPath());
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
+
 
         s.setAllowFileAccess(true);
         s.setAllowFileAccessFromFileURLs(true);
