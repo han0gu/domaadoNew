@@ -122,7 +122,7 @@ public class SendMailTask extends AsyncTask<String, Void, String> {
 		StringBuffer cStringBuffer = new StringBuffer("");
 		
 		try {
-			String URLstr = mContext.getString(R.string.url_site);
+			String URLstr = mContext.getString(R.string.url_api_site);
 			String targetUrl = URLstr+"/auth_gmail.html";
 			URL mURL = new URL(targetUrl);
 			HttpRequestor cHttpRequestor = new HttpRequestor(mURL);

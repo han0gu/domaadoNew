@@ -31,7 +31,7 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
 
         //this.setFcmToken(Common.getSharedPreferencesString("fcm_token", ctx));
         this.setFcmToken(FirebaseInstanceId.getInstance().getToken());
-        this.setMobileNo(Common.getPhoneNumber(ctx));
+        this.setMobileNo(""); //Common.getPhoneNumber(ctx));
     }
 
     public String getAppVersion() {
@@ -86,7 +86,7 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         HashMap<String, Object> map = getBaseParameter();
 
         map.put("fcm_token", this.getFcmToken());
-        map.put("mobile_no", this.getMobileNo());
+//        map.put("mobile_no", this.getMobileNo());
         map.put("lat", this.getLat());
         map.put("lon", this.getLon());
         map.put("hashkey", this.getHashKey());
@@ -99,7 +99,7 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         return "CheckUpdateRequest{" +
                 "appVersion='" + appVersion + '\'' +
                 ", fcmToken='" + fcmToken + '\'' +
-                ", mobileNo='" + mobileNo + '\'' +
+//                ", mobileNo='" + mobileNo + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 ", requestType='" + requestType + '\'' +

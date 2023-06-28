@@ -207,22 +207,22 @@
         android:hardwareAccelerated="true"
         android:requestLegacyExternalStorage="true" >
 
-        <activity
-            android:name=".SplashScreenTest"
-            android:windowSoftInputMode="adjustResize"
-            android:configChanges="locale"
-            android:label="@string/app_name_test"
-            android:theme="@style/AppThemeNoActionBar"
-            android:exported="true">
+<!--        <activity-->
+<!--            android:name=".SplashScreenTest"-->
+<!--            android:windowSoftInputMode="adjustResize"-->
+<!--            android:configChanges="locale"-->
+<!--            android:label="@string/app_name_test"-->
+<!--            android:theme="@style/AppThemeNoActionBar"-->
+<!--            android:exported="true">-->
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--            </intent-filter>-->
 
-        </activity>
+<!--        </activity>-->
 
         <activity
             android:name=".SplashScreen"
@@ -237,6 +237,26 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".SplashScreenScheme"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="locale"
+            android:label="@string/app_name"
+            android:theme="@style/AppThemeNoActionBar"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:host="app.start"
+                    android:scheme="domaado" />
+
             </intent-filter>
 
         </activity>

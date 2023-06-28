@@ -295,7 +295,8 @@ public class SplashScreen extends AppCompatActivity {
 				case Constant.RESPONSE_TIMEOUT: {
 					String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : "Update check error!";
 
-					Toast.makeText(SplashScreen.this, message, Toast.LENGTH_SHORT).show();
+//					Toast.makeText(SplashScreen.this, message, Toast.LENGTH_SHORT).show();
+					myLog.e(TAG, "*** RESPONSE_FAILURE: "+message);
 
 					if (handler != null) handler.sendEmptyMessage(0);
 

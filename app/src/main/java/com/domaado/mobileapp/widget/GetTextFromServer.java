@@ -99,7 +99,7 @@ public class GetTextFromServer extends AsyncTask<String, String, String[]> {
 		InputStream is = null;
 		
 		try {
-			String strUrl = ctx.getString(R.string.url_site);
+			String strUrl = ctx.getString(R.string.url_api_site);
 			URL mURL = new URL(strUrl + "/" + fileName);
 			conn = (HttpURLConnection) mURL.openConnection();
 			is = conn.getInputStream();

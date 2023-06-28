@@ -2,6 +2,8 @@ package com.domaado.mobileapp.network;
 
 import android.content.Context;
 
+import com.domaado.mobileapp.App;
+import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.R;
 
 
@@ -18,7 +20,7 @@ public class UrlManager {
      * @return
      */
     public static String getServerUrl(Context ctx) {
-        return ctx.getResources().getString(R.string.url_site);
+        return App.isIsTEST() ? ctx.getResources().getString(R.string.url_api_site_test) : ctx.getResources().getString(R.string.url_api_site);
     }
 
     public static String getCheckUpdate(Context ctx) {

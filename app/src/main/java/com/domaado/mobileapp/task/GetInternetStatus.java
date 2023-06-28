@@ -66,7 +66,7 @@ public class GetInternetStatus extends AsyncTask<Void, Void, Boolean> {
     protected boolean hasInternetAccess() {
 
         try {
-            URL url = new URL(mActivity.getResources().getString(R.string.url_site));
+            URL url = new URL(mActivity.getResources().getString(R.string.url_api_site));
 
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             urlc.setRequestProperty("User-Agent", "Android Application:1");

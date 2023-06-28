@@ -90,26 +90,27 @@
 
     <string name="url_site" translatable="false">https://domaado.me</string>
     <string name="url_site_test" translatable="false">https://test.domaado.me</string>
+
+    <string name="url_api_site" translatable="false">https://trans.domaado.me</string>
+    <string name="url_api_site_test" translatable="false">https://trans.dev.domaado.me</string>
+
     <string name="path" translatable="false">/Domaado</string>
 
     <!-- Server Urls -->
 
-    <string name="url_update_location" translatable="false">/common/APP1022/app/_API/XY_api.asp</string>
+    <string name="url_update_location" translatable="false">/update_location</string>
 
     <!-- 업데이트확인 -->
-    <string name="url_check_update" translatable="false">/common/APP1022/app/_API/check_update.asp</string>
-
-    <!-- 기사위치공유 -->
-    <string name="url_driver_location" translatable="false">/common/APP1022/app/_API/user_location.asp</string>
+    <string name="url_check_update" translatable="false">/check_update</string>
 
     <!-- share redirect url -->
-    <string name="share_url" translatable="false">/common/APP1022/app/_API/share.asp</string>
-    <string name="share_image_url" translatable="false">/common/APP1022/app/_API/share_image.png</string>
+    <string name="share_url" translatable="false">/share</string>
+    <string name="share_image_url" translatable="false">/share_image</string>
 
-    <string name="url_push_content" translatable="false"><![CDATA[/common/APP1022/app/push/view.asp?msg_idx=1123&user_idx=11]]></string>
+    <string name="url_push_content" translatable="false"><![CDATA[/push?msg_idx=1123&user_idx=11]]></string>
 
     <!-- 파일 다운로드 -->
-    <string name="file_download_title">파일 다운로드...</string>
+    <string name="file_download_title">파일 다운로드…</string>
     <string name="file_downloading_message">파일을 다운로드 중입니다.</string>
 
     <!-- 웹 컨텐츠 -->

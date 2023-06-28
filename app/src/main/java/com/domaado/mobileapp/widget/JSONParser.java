@@ -141,7 +141,7 @@ public class JSONParser {
 		
 		try {
 
-			String url = SecureNetworkUtil.getURLwithParams(mContext, mContext.getResources().getString(R.string.url_site)+filename, secSeq, encString, param);
+			String url = SecureNetworkUtil.getURLwithParams(mContext, mContext.getResources().getString(R.string.url_api_site)+filename, secSeq, encString, param);
 
 			result = parserLoadJSONData(mContext, TAG_CONTACTS, url, ITEMS, _isCache);
 						

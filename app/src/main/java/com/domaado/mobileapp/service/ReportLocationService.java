@@ -221,7 +221,7 @@ public class ReportLocationService extends Service implements TMapGpsManager.onL
                     }
                 }
             });
-            reportLocationTask.execute(getResources().getString(R.string.url_site), getResources().getString(R.string.url_driver_location));
+            reportLocationTask.execute(getResources().getString(R.string.url_api_site), getResources().getString(R.string.url_update_location));
         } else {
             myLog.d(TAG, "*** updateDriverLocation: report finish!");
             timer.cancel();
