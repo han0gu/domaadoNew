@@ -347,7 +347,7 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
 
-        myLog.d(TAG, "*** onLocationChanged: Location update!");
+        //myLog.d(TAG, "*** onLocationChanged: Location update!");
 
         if(this.gpsTrackerListener!=null) this.gpsTrackerListener.onUpdateLocation(location);
 
@@ -357,7 +357,7 @@ public class GPSTracker extends Service implements LocationListener {
         String provider = location.getProvider();
         long gettime = location.getTime();
 
-        myLog.d(TAG, "*** onLocationChanged: lat:" + lat + ", lon:" + lon + ", acc:" + acc);
+        //myLog.d(TAG, "*** onLocationChanged: lat:" + lat + ", lon:" + lon + ", acc:" + acc);
         if (mContext != null) {
             Common.saveSharedPreferences(LAT, false, String.valueOf(lat), mContext);
             Common.saveSharedPreferences(LON, false, String.valueOf(lon), mContext);

@@ -2576,4 +2576,9 @@ public class Common {
 
 		return buildedScript;
 	}
+
+	public static JSONObject toJSON(HashMap<String, Object> map){
+		JSONObject jsonObject = new JSONObject(map);
+		return jsonObject;
+	}
 }

@@ -11,4 +11,5 @@ public interface HandleUiListener {
     void onceCamera(String idx, String type, String seq);
 
     default void openKakaoLogin(String callback) {}
+    default void callCallbackResponse(String callback) {}
 }

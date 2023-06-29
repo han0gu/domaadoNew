@@ -713,6 +713,9 @@ public class MyWebViewClient extends WebViewClient implements DownloadListener {
 
     @Override
     public void onPageFinished(WebView view, String url) {
+        if(webViewInterface!=null) {
+            webViewInterface.loadDefaultValue();
+        }
         super.onPageFinished(view, url);
     }
 

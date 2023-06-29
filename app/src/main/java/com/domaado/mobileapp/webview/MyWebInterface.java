@@ -15,4 +15,5 @@ public interface MyWebInterface {
     void onTitleChanged(String titleText);
     void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType);
     void openFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams);
+
 }

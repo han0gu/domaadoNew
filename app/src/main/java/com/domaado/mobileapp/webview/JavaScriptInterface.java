@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.data.CheckUpdateRequest;
 import com.domaado.mobileapp.widget.CustomAlertDialog;
 import com.domaado.mobileapp.widget.myLog;
 
@@ -303,5 +304,14 @@ public class JavaScriptInterface {
                 }
             }
         });
+    }
+
+    /**
+     *
+     * @param callback JSON DATA
+     */
+    @JavascriptInterface
+    public void getAppInfo(String callback) {
+        if(handleUiListener!=null) handleUiListener.callCallbackResponse(callback);
     }
 }

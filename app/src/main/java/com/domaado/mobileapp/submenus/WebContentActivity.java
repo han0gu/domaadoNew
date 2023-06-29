@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.domaado.mobileapp.data.CheckUpdateRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -68,11 +70,15 @@ import com.domaado.mobileapp.widget.SoftKeyboardStateWatcher;
 import com.domaado.mobileapp.widget.myLog;
 
 import org.apache.http.util.EncodingUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.TimerTask;
 
 public class WebContentActivity extends AppCompatActivity implements View.OnClickListener,
@@ -156,6 +162,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         String makeBankPayData(String str);
 
         void loadUrl(String url);
+
+        default void loadDefaultValue() {}
     }
 
     @Override
@@ -422,7 +430,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
         currentLocation = location;
 
-        myLog.d(TAG, "*** location: "+location.toString());
+        //myLog.d(TAG, "*** location: "+location.toString());
 
         if(location != null) {
             App.setCurrentLocation(location);
@@ -807,6 +815,11 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                     }
                 });
             }
+
+            @Override
+            public void loadDefaultValue() {
+                setDefaultValues(mWebView);
+            }
         }));
 
         /**
@@ -925,6 +938,24 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                     }
                     return true;
                 }));
+            }
+
+            @Override
+            public void callCallbackResponse(String callback) {
+                mWebView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        CheckUpdateRequest checkUpdateRequest = new CheckUpdateRequest(WebContentActivity.this);
+                        try {
+                            JSONObject obj = Common.toJSON(checkUpdateRequest.getRequestParameterMap());
+                            String data = Common.buildCallbackWithValue(callback, new String[]{obj.toString()});
+                            myLog.d(TAG, "*** callCallbackResponse: "+data);
+                            callJavascriptCallBack(data);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         };
 
@@ -1053,6 +1084,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         s.setAppCachePath(mContext.getCacheDir().getPath());
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
 
+        s.setMediaPlaybackRequiresUserGesture(false);
 
         s.setAllowFileAccess(true);
         s.setAllowFileAccessFromFileURLs(true);
@@ -1307,4 +1339,115 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         d.show();
     }
 
+    private static final String ANDROID_PLATFORM = "Android";
+    private static final String AMAZON_PLATFORM = "amazon-fireos";
+    private static final String AMAZON_DEVICE = "Amazon";
+
+    private void setDefaultValues(WebView webView) {
+        HashMap<String, String> r = new HashMap<>();
+        try {
+            r.put("version", Common.getAppVersion(this));
+            r.put("osVersion", this.getOSVersion());
+            r.put("platform", this.getPlatform());
+            r.put("model", this.getModel());
+            r.put("manufacturer", this.getManufacturer());
+            r.put("isVirtual", this.isVirtual() ? "true" : "false");
+            r.put("serial", this.getSerialNumber());
+            r.put("sdkVersion", this.getSDKVersion());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            myLog.e(TAG, "*** Exception: "+e.getMessage());
+        }
+
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, String> entry : r.entrySet()) {
+            sb.append(String.format(Locale.getDefault(), "window.localStorage.setItem(\"%s\", \"%s\"); ", entry.getKey(), entry.getValue()));
+        }
+        myLog.e(TAG, "*** valueJavascript: "+sb.toString());
+
+//        StringBuffer sb = new StringBuffer();
+//        for (Map.Entry<String, String> entry : r.entrySet()) {
+//            if(sb.length()==0) sb.append("{");
+//            else sb.append(", ");
+//            sb.append(String.format(Locale.getDefault(), "\"%s\": \"%s\"", entry.getKey(), entry.getValue()));
+//        }
+//        sb.append("}");
+//
+//        String valueJavascript = "const bbs = JSON.parse('"+sb.toString()+"');";
+//        myLog.e(TAG, "*** valueJavascript: "+valueJavascript);
+
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                callJavascriptCallBack(sb.toString());
+            }
+        });
+    }
+
+    public String getPlatform() {
+        String platform;
+        if (isAmazonDevice()) {
+            platform = AMAZON_PLATFORM;
+        } else {
+            platform = ANDROID_PLATFORM;
+        }
+        return platform;
+    }
+
+    public String getModel() {
+        String model = android.os.Build.MODEL;
+        return model;
+    }
+
+    public String getProductName() {
+        String productname = android.os.Build.PRODUCT;
+        return productname;
+    }
+
+    public String getManufacturer() {
+        String manufacturer = android.os.Build.MANUFACTURER;
+        return manufacturer;
+    }
+
+    public String getSerialNumber() {
+        String serial = android.os.Build.SERIAL;
+        return serial;
+    }
+
+    /**
+     * Get the OS version.
+     *
+     * @return
+     */
+    public String getOSVersion() {
+        String osversion = android.os.Build.VERSION.RELEASE;
+        return osversion;
+    }
+
+    public String getSDKVersion() {
+        return String.valueOf(android.os.Build.VERSION.SDK_INT);
+    }
+
+    public String getTimeZoneID() {
+        TimeZone tz = TimeZone.getDefault();
+        return (tz.getID());
+    }
+
+    /**
+     * Function to check if the device is manufactured by Amazon
+     *
+     * @return
+     */
+    public boolean isAmazonDevice() {
+        if (android.os.Build.MANUFACTURER.equals(AMAZON_DEVICE)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isVirtual() {
+        return android.os.Build.FINGERPRINT.contains("generic") ||
+                android.os.Build.PRODUCT.contains("sdk");
+    }
 }

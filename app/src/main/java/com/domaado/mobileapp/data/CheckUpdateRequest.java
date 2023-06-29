@@ -7,6 +7,7 @@ import com.domaado.mobileapp.Common;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by jameshong on 2018. 6. 1..
@@ -90,6 +91,16 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         map.put("lat", this.getLat());
         map.put("lon", this.getLon());
         map.put("hashkey", this.getHashKey());
+
+        return map;
+    }
+
+    public HashMap<String, String> getRequestParameterMapString() {
+        HashMap<String, String> map = new HashMap<>();
+
+        for (Map.Entry<String, Object> entry : getRequestParameterMap().entrySet()) {
+            map.put(entry.getKey(), entry.getKey());
+        }
 
         return map;
     }
