@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.domaado.mobileapp.Common;
+import com.onesignal.OSDeviceState;
+import com.onesignal.OneSignal;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.Map;
 public class CheckUpdateRequest extends RequestBase  implements Serializable {
     String appVersion;
     String fcmToken;
+    String oneSignalPushId;
 
     String mobileNo;
 
@@ -33,6 +36,10 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         //this.setFcmToken(Common.getSharedPreferencesString("fcm_token", ctx));
         this.setFcmToken(FirebaseInstanceId.getInstance().getToken());
         this.setMobileNo(""); //Common.getPhoneNumber(ctx));
+
+        OSDeviceState osDeviceState = OneSignal.getDeviceState();
+        assert osDeviceState != null;
+        setOneSignalPushId(osDeviceState.getPushToken());
     }
 
     public String getAppVersion() {
@@ -83,6 +90,14 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         this.hashKey = hashKey;
     }
 
+    public String getOneSignalPushId() {
+        return this.oneSignalPushId;
+    }
+
+    public void setOneSignalPushId(String oneSignalPushId) {
+        this.oneSignalPushId = oneSignalPushId;
+    }
+
     public HashMap<String, Object> getRequestParameterMap() {
         HashMap<String, Object> map = getBaseParameter();
 
@@ -91,6 +106,7 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         map.put("lat", this.getLat());
         map.put("lon", this.getLon());
         map.put("hashkey", this.getHashKey());
+        map.put("push_id", this.getOneSignalPushId());
 
         return map;
     }
@@ -110,7 +126,7 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         return "CheckUpdateRequest{" +
                 "appVersion='" + appVersion + '\'' +
                 ", fcmToken='" + fcmToken + '\'' +
-//                ", mobileNo='" + mobileNo + '\'' +
+                ", oneSignalPushId='" + oneSignalPushId + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 ", requestType='" + requestType + '\'' +

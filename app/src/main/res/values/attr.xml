@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="CodeScannerView">
+        <attr format="color" name="maskColor"/>
+        <attr format="color" name="frameColor"/>
+        <attr format="color" name="autoFocusButtonColor"/>
+        <attr format="color" name="flashButtonColor"/>
+        <attr format="boolean" name="autoFocusButtonVisible"/>
+        <attr format="boolean" name="flashButtonVisible"/>
+        <attr format="dimension" name="frameThickness"/>
+        <attr format="dimension" name="frameCornersSize"/>
+        <attr format="float" name="frameCornersRadiusX" />
+        <attr format="float" name="frameCornersRadiusY"/>
+        <attr format="float" name="frameAspectRatioWidth"/>
+        <attr format="float" name="frameAspectRatioHeight"/>
+        <attr format="float" name="frameSize"/>
+    </declare-styleable>
+
+    <declare-styleable name="CameraControls">
+        <attr name="camera" format="reference" />
+        <attr name="cover" format="reference" />
+    </declare-styleable>
+
+    <attr name="horizontalPickerStyle" format="reference" />
+
+    <declare-styleable name="RoundedView">
+        <attr name="topLeftCornerRadius" format="dimension" />
+        <attr name="topRightCornerRadius" format="dimension" />
+        <attr name="bottomLeftCornerRadius" format="dimension" />
+        <attr name="bottomRightCornerRadius" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="ClockSlider">
+        <attr name="cc_borderWidth" format="dimension" />
+        <attr name="cc_metricTextSize" format="dimension" />
+        <attr name="cc_minuteTextSize" format="dimension" />
+        <attr name="cc_borderColor" format="color" />
+        <attr name="cc_fillColor" format="color" />
+        <attr name="cc_tickTextColor" format="color" />
+        <attr name="cc_minuteTextColor" format="color" />
+        <attr name="cc_startIconResource" format="reference" />
+        <attr name="cc_endIconResource" format="reference" />
+        <attr name="cc_is24HR" format="boolean" />
+        <attr name="cc_startHour" format="float" />
+        <attr name="cc_endHour" format="float" />
+        <attr name="cc_metricMode" format="enum">
+            <enum name="counter" value="0" />
+            <enum name="clock" value="1" />
+        </attr>
+    </declare-styleable>
+
+<!--    <declare-styleable name="WheelPicker">-->
+<!--        <attr name="wheel_data" format="reference" />-->
+<!--        <attr name="wheel_selected_item_position" format="integer" />-->
+<!--        <attr name="wheel_item_text_size" format="dimension" />-->
+<!--        <attr name="wheel_item_text_color" format="color" />-->
+<!--        <attr name="wheel_selected_item_text_color" format="color" />-->
+<!--        <attr name="wheel_same_width" format="boolean" />-->
+<!--        <attr name="wheel_maximum_width_text" format="string" />-->
+<!--        <attr name="wheel_maximum_width_text_position" format="integer" />-->
+<!--        <attr name="wheel_visible_item_count" format="integer" />-->
+<!--        <attr name="wheel_item_space" format="dimension" />-->
+<!--        <attr name="wheel_cyclic" format="boolean" />-->
+<!--        <attr name="wheel_indicator" format="boolean" />-->
+<!--        <attr name="wheel_indicator_color" format="color" />-->
+<!--        <attr name="wheel_indicator_size" format="dimension" />-->
+<!--        <attr name="wheel_curtain" format="boolean" />-->
+<!--        <attr name="wheel_curtain_color" format="color" />-->
+<!--        <attr name="wheel_atmospheric" format="boolean" />-->
+<!--        <attr name="wheel_curved" format="boolean" />-->
+<!--        <attr name="wheel_item_align" format="enum">-->
+<!--            <enum name="center" value="0" />-->
+<!--            <enum name="left" value="1" />-->
+<!--            <enum name="right" value="2" />-->
+<!--        </attr>-->
+<!--        <attr name="wheel_font_path" format="string" />-->
+<!--    </declare-styleable>-->
+
+</resources>

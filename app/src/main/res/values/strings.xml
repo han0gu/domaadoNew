@@ -15,10 +15,6 @@
     <string name="call_row_elapsedtime_min">%1$s분전</string>
     <string name="call_row_elapsedtime_hour">%1$s:%2$s분전</string>
 
-    <string name="camera_descript">사진을 촬영해 주세요</string>
-
-    <string name="pick_image_intent_text">사진 가져올 방법을 선택하세요</string>
-
     <!-- sharing location -->
     <string name="driver_delevery_report_fail">실시간 위치를 공유하지 못했습니다.</string>
     <string name="driver_location_reporting">이동정보를 공유하고 있습니다.</string>
@@ -103,6 +99,8 @@
     <!-- 업데이트확인 -->
     <string name="url_check_update" translatable="false">/check_update</string>
 
+    <string name="url_my_photo_update" translatable="false">/photo_update</string>
+
     <!-- share redirect url -->
     <string name="share_url" translatable="false">/share</string>
     <string name="share_image_url" translatable="false">/share_image</string>
@@ -176,24 +174,45 @@
     <string name="meter_string_bottom"><![CDATA[%,.2f km]]></string>
 
     <!-- camera -->
-    <string name="photo_box_hint">눌러서촬영</string>
-
     <string name="camera_error">카메라</string>
     <string name="use_default_camera">내장 카메라앱 사용</string>
 
-    <string name="camera_shot_guide">차량이 붉은색 점선 안에 오도록 하여 촬영하세요.</string>
+    <string name="camera_face_guide">얼굴이 가이드라인 안에 오도록하여 촬영하세요.</string>
+    <string name="camera_body_guide">전신이 가이드라인 안에 오도록하여 촬영하세요.</string>
+
+    <string name="camera_comm_guide">촬영버튼을 길게누르면 타이머가 작동합니다.</string>
+
+    <string name="camera_face_step1">정면</string>
+    <string name="camera_face_step2">좌측면</string>
+    <string name="camera_face_step3">우측면</string>
+
+    <string name="camera_retry_shot_btn">다시찍기</string>
+    <string name="camera_get_shot_btn">촬영</string>
 
     <string name="retry_base_camera">촬영을 다시 시도해 보세요.</string>
     <string name="can_not_use_to_camera">일시적으로 카메라를 사용할 수 없습니다. 앱을 다시 구동해보세요.</string>
 
     <string name="camera_detail_view_title">사진 (%1$s/%2$s)</string>
 
-    <string name="please_wait_loading">Loading...</string>
-
     <string name="notfound_camera_app">지정된 카메라 어플리케이션을 찾을 수 없습니다.</string>
 
-    <string name="delete_question_camera_pkg">기본지정 카메라 선택항목을 삭제할까요?</string>
-    <string name="delete_success_camera_pkg">삭제했습니다.</string>
+    <string name="outofmemory_bitmap_size">이미지 크기가 너무 큽니다.\n촬영 옵션에서 이미지 크기를 줄여주시기 바랍니다.</string>
+    <string name="unknownerror_bitmap_size">이미지 처리중 알수 없는 오류가 발생하였습니다.</string>
+
+    <!-- camera util - imagepicker -->
+    <string name="error_gif">x or y bound size should be at least %1$dpx and file size should be no more than %2$sM</string>
+    <string name="toast_image_intent_null">이미지 가져오기 옵션이 잘못되었습니다.</string>
+    <string name="lbl_set_profile_photo">Set profile image</string>
+    <string name="lbl_take_camera_picture">Take a picture</string>
+    <string name="lbl_choose_from_gallery">Choose from gallery</string>
+    <string name="popup_other_choose_file">파일을 선택하세요</string>
+
+    <string name="choose_file_error_file_type">이 형식의 파일을 열 수 없습니다.</string>
+    <string name="choose_file_file_open_error">이 파일을 열 수 없습니다.</string>
+
+    <string name="file_download_desc">%1$s 파일다운로드</string>
+    <string name="camera_descript">사진을 촬영해 주세요</string>
+    <string name="pick_image_intent_text">사진 가져올 방법을 선택하세요</string>
 
     <!-- Share -->
     <string name="send_to_title">공유방법을 선택하세요</string>
@@ -202,6 +221,10 @@
 
     <string name="share_title">%1$s 앱을 설치해보세요</string>
     <string name="share_message">안녕하세요? 고철비철 중개 플랫폼 철스크랩입니다.</string>
+
+    <!-- result code -->
+    <string name="result_code_S01">성공</string>
+    <string name="result_code_E01">오류입니다.</string>
 
     <!-- TTS -->
     <string name="voice_tts_startup">Welcome to good valet parking service.</string>

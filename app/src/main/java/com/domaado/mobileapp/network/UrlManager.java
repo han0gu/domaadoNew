@@ -2,6 +2,8 @@ package com.domaado.mobileapp.network;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.domaado.mobileapp.App;
 import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.R;
@@ -25,6 +27,10 @@ public class UrlManager {
 
     public static String getCheckUpdate(Context ctx) {
         return ctx.getResources().getString(R.string.url_check_update);
+    }
+
+    public static String getPhotoProfileUpdateAPI(@NonNull Context ctx) {
+        return ctx.getResources().getString(R.string.url_my_photo_update);
     }
 
     /**

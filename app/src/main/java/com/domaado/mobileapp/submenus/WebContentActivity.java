@@ -1,6 +1,7 @@
 package com.domaado.mobileapp.submenus;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -29,12 +31,15 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -42,7 +47,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.domaado.mobileapp.camera.CameraUtil;
+import com.domaado.mobileapp.camera.ImagePickerActivity;
 import com.domaado.mobileapp.data.CheckUpdateRequest;
+import com.domaado.mobileapp.data.ClientUserEntry;
+import com.domaado.mobileapp.data.PhotoEntry;
+import com.domaado.mobileapp.data.UserProfileUpdateRequest;
+import com.domaado.mobileapp.data.UserProfileUpdateResponse;
+import com.domaado.mobileapp.network.UrlManager;
+import com.domaado.mobileapp.task.UserProfileUpdateTask;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -68,12 +81,15 @@ import com.domaado.mobileapp.webview.MyWebViewClient;
 import com.domaado.mobileapp.widget.KeyboardHeightProvider;
 import com.domaado.mobileapp.widget.SoftKeyboardStateWatcher;
 import com.domaado.mobileapp.widget.myLog;
+import com.onesignal.OSDeviceState;
+import com.onesignal.OneSignal;
 
 import org.apache.http.util.EncodingUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
@@ -143,6 +159,15 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 }
         }
     };
+
+    public ActivityResultLauncher<Intent> CameraUtilResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            // PAYMENT SUCCESS!
+            Intent data = result.getData();
+            Uri uri = data.getParcelableExtra("path");
+            procProfilePhoto(uri);
+        }
+    });
 
     /**
      * FOR BANKPAY
@@ -957,6 +982,62 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                     }
                 });
             }
+
+            @Override
+            public void savelogin(String loginid, String passwd, String callback) {
+                boolean ret = Common.saveSharedPreferencesString(Constant.AUTO_LOGIN_ID, loginid, WebContentActivity.this);
+                if(ret) ret = Common.saveSharedPreferencesString(Constant.AUTO_LOGIN_PW, passwd, WebContentActivity.this);
+
+                if(!ret) {
+                    Common.removeSharedPreferences(Constant.AUTO_LOGIN_ID, WebContentActivity.this);
+                    Common.removeSharedPreferences(Constant.AUTO_LOGIN_PW, WebContentActivity.this);
+                }
+
+                callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{ret?"0":"1"}));
+            }
+
+            @Override
+            public void offlogin(String callback) {
+                Common.removeSharedPreferences(Constant.AUTO_LOGIN_ID, WebContentActivity.this);
+                Common.removeSharedPreferences(Constant.AUTO_LOGIN_PW, WebContentActivity.this);
+
+                callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{"0"}));
+            }
+
+            public void autologin(String callback) {
+                String loginid = Common.getSharedPreferencesString(Constant.AUTO_LOGIN_ID, WebContentActivity.this);
+                String loginpw = Common.getSharedPreferencesString(Constant.AUTO_LOGIN_PW, WebContentActivity.this);
+
+                callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{loginid, loginpw}));
+            }
+
+            public void onMedia(int type, String callback) {
+                switch(type) {
+                    case 0: // camera
+                        break;
+                    case 1: // image
+                        break;
+                    case 2: // picker
+                        break;
+                    default:
+                        break;
+                }
+
+                //ImagePickerActivity.REQUEST_GALLERY_IMAGE
+                updateProfileImage(type);
+            }
+
+            @Override
+            public void getpushid(String callback) {
+                OSDeviceState osDeviceState = OneSignal.getDeviceState();
+                String pushIdString = "";
+                if(osDeviceState!=null) {
+                    pushIdString = osDeviceState.getPushToken();
+                }
+
+                callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{pushIdString}));
+
+            }
         };
 
         //handle downloading
@@ -1449,5 +1530,118 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
     public boolean isVirtual() {
         return android.os.Build.FINGERPRINT.contains("generic") ||
                 android.os.Build.PRODUCT.contains("sdk");
+    }
+
+    private void updateProfileImage(int option) {
+        CameraUtil cameraUtil = new CameraUtil(this);
+        cameraUtil.launchGalleryIntent(CameraUtilResult, option);
+    }
+
+    private void procProfilePhoto(Uri uri) {
+        final ImageView user_profile_edit_img = findViewById(R.id.user_profile_edit_img);
+
+        if(uri!=null) {
+            try {
+                myLog.e(TAG, "*** procProfilePhoto uri: "+uri.toString());
+
+                Common.loadImageCache(this, uri.toString(), user_profile_edit_img, (int)Common.convertDpToPixel(this, 107), new Handler(msg -> {
+
+                    switch(msg.what) {
+                        case 0: {
+                            if(msg.obj instanceof PhotoEntry) {
+                                PhotoEntry photoEntry = (PhotoEntry) msg.obj;
+
+                                sendProfileData(clientUserEntry, photoEntry);
+                            } else {
+                                Toast.makeText(this, "UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
+                            }
+                            break;
+                        }
+                        case 1:
+                        case 2: {
+                            if(msg.obj instanceof String) {
+                                String message = (String)msg.obj;
+                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(this, msg.what+" UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
+                            }
+                            break;
+                        }
+
+                    }
+
+                    return true;
+                }));
+
+                Bitmap bitmap = Common.getUriImage(this, uri);
+                if(bitmap!=null) {
+
+                    user_profile_edit_img.setImageBitmap(bitmap);
+
+                    PhotoEntry photoEntry = new PhotoEntry();
+                    photoEntry.setPhotoData(bitmap);
+
+                    sendProfileData(clientUserEntry, photoEntry);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void sendProfileData(final ClientUserEntry clientUserEntry, final PhotoEntry photoEntry) {
+        UserProfileUpdateRequest userProfileUpdateRequest = new UserProfileUpdateRequest(this);
+        userProfileUpdateRequest.setClientUserEntry(clientUserEntry);
+        userProfileUpdateRequest.setPhotoEntry(photoEntry);
+
+        UserProfileUpdateTask userProfileUpdateTask = new UserProfileUpdateTask(this, userProfileUpdateRequest, false, new Handler(msg -> {
+
+            UserProfileUpdateResponse response = (UserProfileUpdateResponse)msg.obj;
+
+            switch(msg.what) {
+                case Constant.RESPONSE_SUCCESS: {
+                    parseResponse(response);
+                    break;
+                }
+                case Constant.RESPONSE_FAILURE: {
+                    String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_json_data_error);
+                    // alertMessage =
+                    Common.alertMessage(MyPageEditActivity.this,
+                            getResources().getString(R.string.app_name),
+                            message,
+                            getResources().getString(R.string.btn_ok),
+                            new Handler(msg2 -> {
+                                return true;
+                            }));
+                    break;
+                }
+                case Constant.RESPONSE_TIMEOUT: {
+                    String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_response_error);
+                    // alertMessage =
+                    Common.alertMessage(MyPageEditActivity.this,
+                            getResources().getString(R.string.app_name),
+                            message,
+                            getResources().getString(R.string.btn_retry),
+                            getResources().getString(R.string.btn_ok),
+                            new Handler(msg2 -> {
+                                switch(msg2.what) {
+                                    case Constant.ALERTDIALOG_RESULT_YES:
+                                        sendProfileData(clientUserEntry, photoEntry);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                return true;
+                            }));
+                    break;
+                }
+            }
+
+            return true;
+        }));
+
+        userProfileUpdateTask.execute(Constant.SITE_URL[myLog.debugMode?1:0], UrlManager.getPhotoProfileUpdateAPI(this));
     }
 }

@@ -1,10 +1,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,104 +15,277 @@
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent" />-->
 
-
-        <com.camerakit.CameraKitView
+        <com.jameshong.camerakit.CameraView
             android:id="@+id/camera"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:keepScreenOn="true"
-            app:camera_facing="back"
-            app:camera_flash="auto"
-            app:camera_focus="continuous"
-            app:camera_permissions="camera"
-            app:camera_zoomFactor="1" />
+            android:layout_height="match_parent"
+            app:ckCropOutput="false"
+            app:ckDoubleTapToToggleFacing="true"
+            app:ckFacing="front"
+            app:ckFlash="off"
+            app:ckFocus="tapWithMarker"
+            app:ckJpegQuality="100"
+            app:ckMethod="standard"
+            app:ckPermissions="picture"
+            app:ckPinchToZoom="true"
+            app:ckTimerCountdown="5"
+            app:ckTimerShutter="2000"
+            app:ckVideoQuality="highest"
+            app:ckZoom="1.0" />
 
-
-        <me.mattak.aspect_ratio_layout.LinearLayout
-            android:id="@+id/camera_get_area"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|center_vertical"
-            android:gravity="center_vertical|center_horizontal"
-            app:aspect_height="1"
-            app:aspect_width="1">
-
-            <ImageView
-                android:layout_width="340dp"
-                android:layout_height="340dp"
-                android:src="@drawable/dotted" />
-
-        </me.mattak.aspect_ratio_layout.LinearLayout>
+<!--        <com.jameshong.camerakit.CameraView-->
+<!--            android:id="@+id/camera"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:adjustViewBounds="true"-->
+<!--            app:ckCropOutput="false"-->
+<!--            app:ckDoubleTapToToggleFacing="true"-->
+<!--            app:ckFacing="back"-->
+<!--            app:ckFlash="off"-->
+<!--            app:ckFocus="tapWithMarker"-->
+<!--            app:ckJpegQuality="100"-->
+<!--            app:ckMethod="standard"-->
+<!--            app:ckPinchToZoom="true"-->
+<!--            app:ckVideoQuality="highest"-->
+<!--            app:ckZoom="1.0" />-->
 
         <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginTop="30dp"
-            android:text="@string/camera_shot_guide"
+            android:id="@+id/camera_shot_guide_tit"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentTop="true"
+            android:background="@color/camera_top_bg"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@null"
             android:textColor="@color/White" />
 
         <LinearLayout
+            android:id="@+id/camera_step_box"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_gravity="bottom"
-            android:layout_marginBottom="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:gravity="center_horizontal"
-            android:weightSum="3">
+            android:layout_below="@id/camera_shot_guide_tit"
+            android:background="@color/camera_top_bg"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/camera_get_cancel_btn"
-                android:layout_width="0dip"
-                android:layout_height="match_parent"
+            <SeekBar
+                android:id="@+id/camera_step_seekbar"
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="75dp"
+                android:layout_marginRight="75dp"
                 android:layout_weight="1"
-                android:background="@drawable/rounded_gray_bg"
-                android:text="@string/btn_cancel"
-                android:textColor="@color/White"
-                android:textSize="16sp" />
+                android:clickable="false"
+                android:max="2"
+                android:progress="3" />
 
-            <Button
-                android:id="@+id/camera_get_base_btn"
-                android:layout_width="0dip"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="10dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
                 android:layout_weight="1"
-                android:background="@drawable/rounded_gray_bg"
-                android:text="@string/btn_base_shoot"
-                android:textColor="@color/White"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:orientation="horizontal"
+                android:weightSum="3">
 
-            <Button
-                android:id="@+id/camera_get_shot_btn"
-                android:layout_width="0dip"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/rounded_gray_bg"
-                android:enabled="false"
-                android:text="@string/btn_shot_count"
-                android:textColor="@color/White"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/camera_step1_text"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/camera_face_step1"
+                    android:textColor="@color/camera_slide_bar"
+                    android:textSize="16dp" />
 
-            <Button
-                android:id="@+id/camera_submit_btn"
-                android:layout_width="0dip"
+                <TextView
+                    android:id="@+id/camera_step2_text"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/camera_face_step2"
+                    android:textColor="@color/camera_slide_bar"
+                    android:textSize="16dp" />
+
+                <TextView
+                    android:id="@+id/camera_step3_text"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:text="@string/camera_face_step3"
+                    android:textColor="@color/camera_slide_bar"
+                    android:textSize="16dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--<com.wonderkiln.camerakit.CameraView-->
+            <!--android:id="@+id/camera"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--app:ckCropOutput="false"-->
+            <!--app:ckDoubleTapToToggleFacing="true"-->
+            <!--app:ckFacing="back"-->
+            <!--app:ckFlash="off"-->
+            <!--app:ckFocus="tapWithMarker"-->
+            <!--app:ckJpegQuality="100"-->
+            <!--app:ckMethod="standard"-->
+            <!--app:ckPinchToZoom="true"-->
+            <!--app:ckVideoQuality="highest"-->
+            <!--app:ckZoom="1.0" />-->
+
+        <!--<com.camerakit.CameraKitView-->
+            <!--android:id="@+id/camera"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:adjustViewBounds="true"-->
+            <!--android:keepScreenOn="true"-->
+            <!--app:camera_facing="front"-->
+            <!--app:camera_flash="auto"-->
+            <!--app:camera_focus="continuous"-->
+            <!--app:camera_permissions="storage|camera"-->
+            <!--app:camera_zoomFactor="1" />-->
+
+        <!--me.mattak.aspect_ratio_layout.LinearLayout    app:aspect_width="1" -->
+        <LinearLayout
+            android:id="@+id/camera_get_area"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/camera_bottom_box"
+            android:layout_below="@id/camera_step_box"
+            android:gravity="center_vertical|center_horizontal">
+
+            <ImageView
+                android:id="@+id/camera_guide_line"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/rounded_gray_bg"
-                android:text="@string/btn_confirm"
-                android:textColor="@color/White"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/camera_face_guide_fit" />
 
         </LinearLayout>
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/camera_shot_guide_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/camera_comm_guide"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_horizontal"
+            android:text="@string/camera_face_guide"
+            android:textColor="@color/White"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/camera_comm_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/camera_bottom_box"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="15dp"
+            android:gravity="center_horizontal"
+            android:text="@string/camera_comm_guide"
+            android:textColor="@color/White"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/camera_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            android:fontFamily="sans-serif-black"
+            android:text="10"
+            android:textColor="@color/yellow_color"
+            android:textSize="100dp" />
+
+        <ImageView
+            android:id="@+id/camera_close_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/popup_close" />
+
+        <RelativeLayout
+            android:id="@+id/camera_bottom_box"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/White"
+            android:padding="10dp">
+
+            <View
+                android:id="@+id/blackCover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/black"
+                android:visibility="gone" />
+
+            <kr.huno.myuniverse.camera.CameraControls
+                android:id="@+id/camera_control_box"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom"
+                android:elevation="7dp"
+                app:camera="@+id/camera"
+                app:cover="@+id/blackCover" />
+
+            <LinearLayout
+                android:id="@+id/camera_bottom_complete_box"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_alignParentBottom="false"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center_horizontal|center_vertical"
+                android:visibility="gone"
+                android:weightSum="3">
+
+                <Button
+                    android:id="@+id/camera_retry_shot_btn"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="10dp"
+                    android:background="@drawable/camera_retry_icon"
+                    android:textColor="@color/White"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/camera_submit_btn"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginLeft="70dp"
+                    android:background="@drawable/camera_submit_icon"
+                    android:textColor="@color/White"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/camera_get_base_btn"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginLeft="50dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/rounded_gray_bg"
+                    android:text="@string/btn_base_shoot"
+                    android:textColor="@color/White"
+                    android:textSize="16sp"
+                    android:visibility="invisible" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
     
 </LinearLayout>

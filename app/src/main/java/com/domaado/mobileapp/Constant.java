@@ -16,8 +16,14 @@ public class Constant {
 
     public final static int[] cryptIvs = { 0x21, 0x40, 0x23, 0x24, 0x25, 0x5e, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30 };
     public final static String ENCODING = "UTF-8";
+    public final static int REQUEST_TIMEOUT = 30;    // seconds
+    public final static int REQUEST_TIMEOUT_SHORT = 3;
 
     public final static String FCM_SERVER_KEY = "";
+
+    public final static String AUTO_LOGIN_ID    = "ai";
+    public final static String AUTO_LOGIN_PW    = "ap";
+    public final static String ONESIGNAL_APP_ID = "ffd2c22d-f049-4c43-84bd-2528f5e1f61a";
 
     // 음성안내
     public final static String CONFIG_VOICE_GUIDE = "voiceguide";

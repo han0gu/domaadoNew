@@ -6,6 +6,8 @@ import android.location.Location;
 
 import com.domaado.mobileapp.data.QueryParams;
 import com.domaado.mobileapp.widget.myLog;
+import com.onesignal.OSDeviceState;
+import com.onesignal.OneSignal;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
@@ -42,6 +44,9 @@ public class App extends Application {
 	public static Location currentLocation;
 
 	public static boolean isTEST = false;
+
+	public static byte[] keyByte;
+	public static byte[] ivByte;
 	
 	@Override
 	public void onCreate() {
@@ -54,6 +59,19 @@ public class App extends Application {
 		// ACRA
 
 		queryParams = new QueryParams();
+
+		// Logging set to help debug issues, remove before releasing your app.
+		OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+
+		// OneSignal Initialization
+		OneSignal.initWithContext(this);
+		OneSignal.setAppId(Constant.ONESIGNAL_APP_ID);
+
+		// promptForPushNotifications will show the native Android notification permission prompt.
+		// We recommend removing the following code and instead using an In-App Message to prompt for notification permission (See step 7)
+		OneSignal.promptForPushNotifications();
+
+		//OSDeviceState osDeviceState = OneSignal.getDeviceState();
 
 		super.onCreate();
 	}
@@ -135,5 +153,21 @@ public class App extends Application {
 
 	public synchronized static void setCurrentLocation(Location currentLocation) {
 		App.currentLocation = currentLocation;
+	}
+
+	public static byte[] getKeyByte() {
+		return keyByte;
+	}
+
+	public static void setKeyByte(byte[] keyByte) {
+		App.keyByte = keyByte;
+	}
+
+	public static byte[] getIvByte() {
+		return ivByte;
+	}
+
+	public static void setIvByte(byte[] ivByte) {
+		App.ivByte = ivByte;
 	}
 }

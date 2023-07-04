@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -69,6 +70,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.domaado.mobileapp.data.PhotoEntry;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.skt.Tmap.TMapView;
 import com.domaado.mobileapp.locale.LocaleUtils;
 import com.domaado.mobileapp.sensors.BluetoothTetheringHelper;
@@ -94,6 +103,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
@@ -1937,6 +1947,10 @@ public class Common {
 		return Base64.encodeToString(content.getBytes(), Base64.NO_WRAP);
 	}
 
+	public static String getBase64encode(byte[] content) {
+		return Base64.encodeToString(content, Base64.NO_WRAP);
+	}
+
 	public static String getBase64encodeImage(Bitmap bitmap) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
@@ -2581,4 +2595,447 @@ public class Common {
 		JSONObject jsonObject = new JSONObject(map);
 		return jsonObject;
 	}
+
+	public static byte[] bitmapToByteArray(Bitmap bitmap) {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+		byte[] byteArray = stream.toByteArray();
+		return byteArray;
+	}
+
+	public static Bitmap byteArrayToBitmap(byte[] byteArray) {
+		Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+		return bitmap;
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
+	public static int getBitmapSizeOf(Bitmap data) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB_MR1) {
+			return data.getRowBytes() * data.getHeight();
+		} else {
+			return data.getByteCount();
+		}
+	}
+
+	public static void setImageBitmap(Context context, ImageView view, Bitmap bitmap) {
+		try {
+			int sizeBytes = getBitmapSizeOf(bitmap);
+
+			myLog.e(TAG, "*** setImageBitmap size is " + String.format("%,d bytes", sizeBytes));
+			//if(myLog.debugMode) Toast.makeText(context, "*** Debug: setImageBitmap size is " + String.format("%,d MB", (sizeBytes/1048576)), Toast.LENGTH_SHORT).show();
+
+			if (sizeBytes > (50 * 1048576)) {
+				// 50MB Over!
+				Bitmap mCacheBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 2, bitmap.getHeight() / 2, false);
+				myLog.e(TAG, "*** setImageBitmap resize to " + String.format("%,d bytes", getBitmapSizeOf(mCacheBitmap)));
+
+				bitmap = mCacheBitmap;
+			}
+
+			view.setImageBitmap(bitmap);
+
+		} catch (OutOfMemoryError e) {
+			e.printStackTrace();
+			myLog.e(TAG, "*** OutOfMemory: "+e.getMessage());
+			if(myLog.debugMode) {
+				Toast.makeText(context, context.getResources().getString(R.string.outofmemory_bitmap_size), Toast.LENGTH_SHORT).show();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			myLog.e(TAG, "*** Exception: "+e.getMessage());
+			if(myLog.debugMode) {
+				Toast.makeText(context, context.getResources().getString(R.string.unknownerror_bitmap_size), Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+
+	public static Uri convertLocalFile(Context context, Uri sourceUri) {
+		Uri targetUri = null;
+
+		try {
+			byte[] bytes = getBytes(context, sourceUri);
+
+			String filename = sourceUri.getLastPathSegment();
+			File path = getStoragePath(context, filename);
+
+			targetUri = saveByteToFile(bytes, path);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return targetUri;
+	}
+
+	@Nullable
+	public static Uri saveByteToFile(byte[] bytes, File file) {
+		try {
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(bytes);
+			fos.close();
+
+			return Uri.fromFile(file);
+
+		} catch (Exception e) {
+			myLog.e(TAG, e.getMessage());
+		}
+
+		return null;
+	}
+
+	public static byte[] getBytes(@NonNull InputStream inputStream) throws IOException {
+
+		byte[] bytesResult = null;
+		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+		int bufferSize = 1024;
+		byte[] buffer = new byte[bufferSize];
+		try {
+			int len;
+			while ((len = inputStream.read(buffer)) != -1) {
+				byteBuffer.write(buffer, 0, len);
+			}
+			bytesResult = byteBuffer.toByteArray();
+		} finally {
+			// close the stream
+			try{ byteBuffer.close(); } catch (IOException ignored){ /* do nothing */ }
+		}
+		return bytesResult;
+	}
+
+	public static byte[] getBytes(@NonNull Context context, Uri uri) throws IOException {
+		InputStream iStream = context.getContentResolver().openInputStream(uri);
+		try {
+			return getBytes(iStream);
+		} finally {
+			// close the stream
+			try {
+				iStream.close();
+			} catch (IOException ignored) { /* do nothing */ }
+		}
+	}
+
+	public static void makeNoMediaFolder(String path) {
+		File file = new File(path + File.separator + ".nomedia");
+
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String getCacheFileName(Context context, String url) {
+		String fname = url;
+		try {
+			String[] fnames = url.split("/");
+			if (fnames != null && fnames.length > 0) {
+				fname = fnames[fnames.length - 1];
+				fname = !TextUtils.isEmpty(fname) ? fname.replaceAll("[^a-zA-Z0-9_-]", "") : fname;
+			}
+		} catch (Exception e) {
+		}
+
+		// 캐시파일명 생성
+		String path = "";
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			path = context.getExternalFilesDir(Environment.getRootDirectory() + File.separator + "image_cache").getAbsolutePath();
+		} else {
+			path = Environment.getExternalStorageDirectory() + File.separator + "image_cache";
+		}
+
+		if (!new File(path).exists()) {
+			new File(path).mkdir();
+		} else if (!new File(path).isDirectory()) {
+			new File(path).delete();
+			new File(path).mkdir();
+		}
+
+		makeNoMediaFolder(path);
+
+		String filepath = path + File.separator + fname;
+
+		return filepath;
+	}
+
+	public static void clearImageCache(Context context, String url) {
+		try {
+			String filepath = getCacheFileName(context, url);
+
+			if ((new File(filepath)).exists()) {
+				File file = new File(filepath);
+				file.delete();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String getLastFilename(String url) {
+		try {
+			File file = new File(url);
+			return Uri.fromFile(file).getLastPathSegment();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		return url;
+	}
+
+	public static void saveImageBitmap(Bitmap bitmap, File saveFile) {
+		try {
+			FileOutputStream fos = new FileOutputStream(saveFile);
+			bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+			fos.flush();
+			fos.close();
+		} catch (IOException e) {
+			myLog.e(TAG, "*** saveImageBitmap: " + e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+	}
+
+	public static Bitmap getUriImage(Context context, Uri uri) throws FileNotFoundException, IOException{
+		InputStream input = context.getContentResolver().openInputStream(uri);
+
+		BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
+		onlyBoundsOptions.inJustDecodeBounds = true;
+		onlyBoundsOptions.inDither=true;//optional
+		onlyBoundsOptions.inPreferredConfig=Bitmap.Config.ARGB_8888;//optional
+		Bitmap bitmap = BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
+		input.close();
+
+		return bitmap;
+	}
+
+	public static void loadImageCache(Context context, String url, final ImageView imageView, final int width, final Handler handler) {
+
+		try {
+
+			final Message message = new Message();
+			PhotoEntry photoEntry = new PhotoEntry();
+
+			if (TextUtils.isEmpty(url)) {
+				imageView.setImageResource(R.drawable.noimage);
+				return;
+			}
+
+			final String filepath = getCacheFileName(context, url);
+			Date lastModDate = new Date();
+			long fileSize = 0;
+			String fname = "";
+			if ((new File(filepath)).exists()) {
+				File file = new File(filepath);
+				fname = Uri.fromFile(file).getLastPathSegment();
+				lastModDate = new Date(file.lastModified());
+				fileSize = file.length();
+
+				photoEntry.setPhotoName(getLastFilename(url));
+				photoEntry.setPhotoType(getMimeType(url));
+
+			}
+
+			boolean doCache = false;
+			String cacheName = "image_cache_" + fname;
+			if (!TextUtils.isEmpty(fname)) {
+				String ts = getSharedPreferencesString(cacheName, context);
+
+				String ca = String.format(Locale.getDefault(), "%s%s", String.valueOf(lastModDate.getTime()), String.valueOf(fileSize));
+
+				if (!TextUtils.isEmpty(ca) && ca.equals(ts)) {
+					doCache = true;
+				}
+			}
+
+//			long lastSeconds = (System.currentTimeMillis() - (60 * 60 * 24 * 1000));
+
+//			myLog.d(TAG, "*** loadImageCache: filepath: "+filepath);
+//			myLog.d(TAG, "*** loadImageCache: save: "+lastModDate.getTime());
+//			myLog.d(TAG, "*** loadImageCache: cache: "+doCache);
+
+			// 캐시처리가 아니라면!
+			if (!doCache) {
+//			if (!(new File(filepath)).exists() || lastModDate.getTime() < lastSeconds) {
+
+				if (url.contains("http") && url.contains("?"))
+					url = String.format("%s&ts=%s", url, String.valueOf(System.currentTimeMillis()));
+				else if (url.contains("http"))
+					url = String.format("%s?ts=%s", url, String.valueOf(System.currentTimeMillis()));
+
+//				myLog.d(TAG, "*** loadImageCache: url: "+url);
+
+				DisplayImageOptions options;
+
+				ImageLoader imageLoader = ImageLoader.getInstance();
+
+				if (!imageLoader.isInited())
+					imageLoader.init(ImageLoaderConfiguration.createDefault(context));
+
+				options = new DisplayImageOptions.Builder()
+						.showImageForEmptyUri(R.drawable.ic_launcher)
+						.showImageOnFail(R.drawable.ic_launcher)
+						.resetViewBeforeLoading()
+						.imageScaleType(ImageScaleType.IN_SAMPLE_INT)
+						.bitmapConfig(Bitmap.Config.RGB_565)
+						.displayer(new FadeInBitmapDisplayer(300))
+						.cacheOnDisk(false)
+						.build();
+
+				//String fullurl = Constant.SITE_URL[Constant.ISTEST]+File.separator+url;
+
+//				String encodedUrl = URLEncoder.encode(url, "UTF-8");
+
+//				myLog.d(TAG, "*** loadImageCache: url: "+url);
+				String newUrl = url;
+				try {
+					newUrl = URLDecoder.decode(url, "UTF-8");
+				} catch (Exception e) {
+				}
+//				myLog.d(TAG, "*** loadImageCache: newUrl: "+newUrl);
+
+				imageLoader.loadImage(newUrl, options, new ImageLoadingListener() {
+					@Override
+					public void onLoadingStarted(String s, View view) {
+
+					}
+
+					@Override
+					public void onLoadingFailed(String s, View view, FailReason failReason) {
+						String errMessage = null;
+						switch (failReason.getType()) {
+							case IO_ERROR:
+								errMessage = "Input/Output error";
+								break;
+							case OUT_OF_MEMORY:
+								errMessage = "Out Of Memory error";
+								break;
+							case NETWORK_DENIED:
+								errMessage = "Downloads are denied";
+								break;
+							case DECODING_ERROR:
+								errMessage = "Unsupported URI scheme";
+								break;
+							case UNKNOWN:
+								errMessage = "Unknown error";
+								break;
+						}
+
+						if (handler != null) {
+							message.what = 1;
+							message.obj = errMessage;
+
+							handler.sendMessage(message);
+						}
+					}
+
+					@Override
+					public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+
+						new File(filepath).delete();
+						saveImageBitmap(bitmap, new File(filepath));
+
+						try {
+							File cacheFile = new File(filepath);
+							Date lastModDate = new Date(cacheFile.lastModified());
+							String ca = String.format(Locale.getDefault(), "%s%s", String.valueOf(lastModDate.getTime()), String.valueOf(cacheFile.length()));
+							if (!TextUtils.isEmpty(ca) && cacheFile.exists() && cacheFile.length() > 0)
+								saveSharedPreferencesString(cacheName, ca, context);
+						} catch (Exception e) {
+						}
+
+						ViewGroup.LayoutParams params = imageView.getLayoutParams();
+						if (width == -1) {
+							params.height = (int) convertDpToPixel(context, 160); //view.getHeight();
+						} else if (width != 0) {
+							params.width = width;
+						} else {
+							params.width = bitmap.getWidth();
+							params.height = bitmap.getHeight();
+						}
+						imageView.setImageBitmap(bitmap);
+						imageView.setLayoutParams(params);
+
+						if (imageView instanceof ImageView) {
+							((ImageView) imageView).setAdjustViewBounds(true);
+							if (width == -1)
+								((ImageView) imageView).setScaleType(ImageView.ScaleType.CENTER_CROP);
+							else
+								((ImageView) imageView).setScaleType(ImageView.ScaleType.FIT_CENTER);
+						}
+
+						imageView.invalidate();
+
+						photoEntry.setPhotoData(bitmap);
+
+						if (handler != null) {
+							message.what = 0;
+							message.obj = photoEntry; //bitmap;
+
+							handler.sendMessage(message);
+						}
+					}
+
+					@Override
+					public void onLoadingCancelled(String s, View view) {
+						if (handler != null) {
+							message.what = 2;
+							message.obj = s;
+
+							handler.sendMessage(message);
+						}
+					}
+				});
+			} else {
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inPreferredConfig = Bitmap.Config.RGB_565;
+				Bitmap bitmap = BitmapFactory.decodeFile(filepath, options);
+
+				ViewGroup.LayoutParams params = imageView.getLayoutParams();
+				if (width == -1) {
+					params.height = (int) convertDpToPixel(context, 160); //imageView.getHeight();
+				} else if (width != 0) {
+					params.width = width;
+				} else {
+					params.width = bitmap.getWidth();
+					params.height = bitmap.getHeight();
+				}
+				imageView.setImageBitmap(bitmap);
+				imageView.setLayoutParams(params);
+
+				if (imageView instanceof ImageView) {
+					((ImageView) imageView).setAdjustViewBounds(true);
+					if (width == -1)
+						((ImageView) imageView).setScaleType(ImageView.ScaleType.CENTER_CROP);
+					else
+						((ImageView) imageView).setScaleType(ImageView.ScaleType.FIT_CENTER);
+				}
+
+				imageView.invalidate();
+
+				photoEntry.setPhotoData(bitmap);
+
+				if (handler != null) {
+					message.what = 0;
+					message.obj = photoEntry; // bitmap;
+
+					handler.sendMessage(message);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			if (handler != null) {
+				Message message = new Message();
+				message.what = 1;
+				message.obj = e.getLocalizedMessage();
+
+				handler.sendMessage(message);
+			}
+		}
+
+	}
+
 }

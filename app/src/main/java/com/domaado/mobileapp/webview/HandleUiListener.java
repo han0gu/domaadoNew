@@ -12,4 +12,11 @@ public interface HandleUiListener {
 
     default void openKakaoLogin(String callback) {}
     default void callCallbackResponse(String callback) {}
+
+    //
+    default void savelogin(String loginid, String passwd, String callback) {}
+    default void offlogin(String callback) {}
+    default void autologin(String callback) {}
+    default void onMedia(int type, String callback) {}
+    default void getpushid(String callback) {}
 }
