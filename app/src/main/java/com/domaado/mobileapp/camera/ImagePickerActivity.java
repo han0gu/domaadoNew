@@ -6,10 +6,12 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -20,8 +22,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
+import com.domaado.mobileapp.BuildConfig;
 import com.domaado.mobileapp.Constant;
+import com.domaado.mobileapp.widget.ImagePicker;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -30,6 +35,7 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.domaado.mobileapp.Common;
@@ -103,6 +109,47 @@ public class ImagePickerActivity extends AppCompatActivity {
         }
     }
 
+//    private static List<Intent> addIntentsToList(Context context, List<Intent> list, Intent intent) {
+//        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent, 0);
+//        for (ResolveInfo resolveInfo : resInfo) {
+//            String packageName = resolveInfo.activityInfo.packageName;
+//            Intent targetedIntent = new Intent(intent);
+//            targetedIntent.setPackage(packageName);
+//            list.add(targetedIntent);
+//            myLog.d(TAG, "*** Intent: " + intent.getAction() + " package: " + packageName);
+//        }
+//        return list;
+//    }
+
+//    public static Intent getPickImageIntent(Context context) {
+//        Intent chooserIntent = null;
+//
+//        List<Intent> intentList = new ArrayList<>();
+//
+//        Intent pickIntent = new Intent(Intent.ACTION_PICK,
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//        takePhotoIntent.putExtra("return-data", true);
+//
+//        fileName = System.currentTimeMillis() + ".jpg";
+////        photoURI = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", getTempFile(context));
+//
+//        //takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
+//        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
+//        takePhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//
+//        intentList = addIntentsToList(context, intentList, pickIntent);
+//        intentList = addIntentsToList(context, intentList, takePhotoIntent);
+//
+//        if (intentList.size() > 0) {
+//            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
+//                    context.getString(R.string.pick_image_intent_text));
+//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+//        }
+//
+//        return chooserIntent;
+//    }
+
     public static void showImagePickerOptions(Context context, PickerOptionListener listener) {
         // setup the alert builder
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -127,19 +174,27 @@ public class ImagePickerActivity extends AppCompatActivity {
     }
 
     private void takeCameraImage() {
+
         Dexter.withActivity(this)
                 .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted()) {
-                            fileName = System.currentTimeMillis() + ".jpg";
-                            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
-                            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-//                                ActionImageCaptureResult.launch(takePictureIntent);
-                                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                            }
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                                    fileName = System.currentTimeMillis() + ".jpg";
+                                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
+                                    takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//                                      ActionImageCaptureResult.launch(takePictureIntent);
+                                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                                    }
+//                                }
+//                            });
                         }
                     }
 

@@ -34,7 +34,7 @@ import java.io.File;
 
 public class JavaScriptInterface {
 
-    String TAG = "JavaScriptInterface";
+    String TAG = JavaScriptInterface.class.getSimpleName();
 
     public Activity activity;
     public WebView webView;

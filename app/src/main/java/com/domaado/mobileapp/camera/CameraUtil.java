@@ -76,7 +76,7 @@ public class CameraUtil {
 
     private Uri mImageCaptureUri, mProductPhotoUri;
 
-    public String FILE_PROVIDER_NAME   = BuildConfig.APPLICATION_ID + ".fileProvider";
+    public String FILE_PROVIDER_NAME   = BuildConfig.APPLICATION_ID + ".provider";
     private String FILE_PREFIX_TEMP     = "tmp_";
     private String FILE_PREFIX_ENCRYPT  = "IMG_";
 

@@ -32,6 +32,7 @@ public class ImagePicker {
 
     public static int minWidthQuality = DEFAULT_MIN_WIDTH_QUALITY;
 
+    public static Uri photoURI;
 
     public static Intent getPickImageIntent(Context context) {
         Intent chooserIntent = null;
@@ -43,7 +44,7 @@ public class ImagePicker {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePhotoIntent.putExtra("return-data", true);
 
-        Uri photoURI = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", getTempFile(context));
+        photoURI = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", getTempFile(context));
 
         //takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
         takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);

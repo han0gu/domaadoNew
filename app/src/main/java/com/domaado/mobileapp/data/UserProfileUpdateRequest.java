@@ -23,6 +23,8 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
 
     public UserProfileUpdateRequest(Context ctx) {
         init(ctx);
+        memberEntry = new MemberEntry();
+        photoEntry = new PhotoEntry();
     }
 
     public HashMap<String, Object> getRequestParameterMap() {
@@ -38,6 +40,7 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
     }
 
     public MemberEntry getClientUserEntry() {
+        if(memberEntry==null) memberEntry = new MemberEntry();
         return memberEntry;
     }
 
@@ -56,8 +59,8 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
     @Override
     public String toString() {
         return "UserProfileUpdateRequest{" +
-                "clientUserEntry=" + memberEntry.toString() +
-                ", photoEntry=" + photoEntry.toString() +
+                "memberEntry=" + (memberEntry!=null ? memberEntry.toString() : "null") +
+                ", photoEntry=" + (photoEntry!=null ? photoEntry.toString() : "null") +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 ", requestType='" + requestType + '\'' +

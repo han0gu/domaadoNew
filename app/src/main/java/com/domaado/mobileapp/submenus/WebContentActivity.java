@@ -57,6 +57,7 @@ import com.domaado.mobileapp.data.UserProfileUpdateRequest;
 import com.domaado.mobileapp.data.UserProfileUpdateResponse;
 import com.domaado.mobileapp.network.UrlManager;
 import com.domaado.mobileapp.task.UserProfileUpdateTask;
+import com.domaado.mobileapp.widget.ImagePicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -171,8 +172,14 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         if (result.getResultCode() == Activity.RESULT_OK) {
             // PAYMENT SUCCESS!
             Intent data = result.getData();
-            Uri uri = data.getParcelableExtra("path");
-            procProfilePhoto(uri);
+            if(data!=null) {
+                myLog.d(TAG, "*** data: " + (data != null ? data.toString() : "null"));
+
+                Uri uri = data.getParcelableExtra("path");
+                procProfilePhoto(uri);
+            } else {
+                myLog.d(TAG, "*** data is null!");
+            }
         }
     });
 
@@ -1561,6 +1568,9 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             public void run() {
                 CameraUtil cameraUtil = new CameraUtil(WebContentActivity.this);
                 cameraUtil.launchGalleryIntent(CameraUtilResult, option);
+
+//                Intent intent = ImagePicker.getPickImageIntent(WebContentActivity.this);
+//                CameraUtilResult.launch(intent);
             }
         });
     }
@@ -1684,6 +1694,9 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
      * 여기에서 카메라, 갤러리를 선택한다.
      */
     private void selectCaptureMedia() {
+
+//        updateProfileImage(ImagePickerActivity.REQUEST_IMAGE_CAPTURE);
+
         ImagePickerActivity.showImagePickerOptions(this, new ImagePickerActivity.PickerOptionListener() {
             @Override
             public void onTakeCameraSelected() {
