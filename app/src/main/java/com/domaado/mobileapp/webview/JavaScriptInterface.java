@@ -332,17 +332,24 @@ public class JavaScriptInterface {
 
     @JavascriptInterface
     public void camera(String uploadUrl, String dataVal, String callback) {
-        if(handleUiListener!=null) handleUiListener.onMedia(0, callback);
+        if(handleUiListener!=null) handleUiListener.onMedia(0, uploadUrl, dataVal, callback);
     }
 
     @JavascriptInterface
     public void image(String uploadUrl, String dataVal, String callback) {
-        if(handleUiListener!=null) handleUiListener.onMedia(1, callback);
+        if(handleUiListener!=null) handleUiListener.onMedia(1, uploadUrl, dataVal, callback);
     }
 
     @JavascriptInterface
     public void picker(String uploadUrl, String dataVal, String callback) {
-        if(handleUiListener!=null) handleUiListener.onMedia(2, callback);
+        if(handleUiListener!=null) handleUiListener.onMedia(2, uploadUrl, dataVal, callback);
+    }
+
+    @JavascriptInterface
+    public void captureImage(String uploadUrl, String dataVal, String callback) {
+        if(handleUiListener!=null) {
+            handleUiListener.selectCapture(uploadUrl, dataVal, callback);
+        }
     }
 
     @JavascriptInterface

@@ -111,4 +111,21 @@
     <color name="config_switch_on">#ffd70246</color>
     <color name="config_switch_off">#ff231815</color>
 
+    <drawable name="LoadingImage">#eeeeee</drawable>
+
+    <!-- camera -->
+    <color name="camera_top_bg">#501E1E1E</color>
+    <color name="camera_slide_bar">#AC8383</color>
+
+    <color name="intro_btn_purple">#5a5d9a</color>
+    <color name="intro_btn_purple_disable">#335a5d9a</color>
+    <color name="intro_btn_lt_purple">#ebecff</color>
+
+    <!-- bottom alert -->
+    <color name="bottom_alert_left_btn_bg">#e0e0eb</color>
+    <color name="bottom_alert_right_btn_bg">#f65251</color>
+    <color name="bottom_alert_left_btn_bg_ov">#33e0e0eb</color>
+    <color name="bottom_alert_right_btn_bg_ov">#33f65251</color>
+    <color name="bottom_alert_context_text">#6d6f80</color>
+
 </resources>

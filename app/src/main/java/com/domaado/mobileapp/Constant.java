@@ -104,6 +104,11 @@ public class Constant {
     public static final int RESULT_GO_FINISH_QUESTION   = 830;
     public static final int RESULT_TAKE_PICTURE         = 990;
 
+    public final static String[] SITE_URL = { "https://domaado.me", "https://test.domaado.me" };
+    public final static String[] API_URL = { "https://trans.domaado.me", "https://trans.dev.domaado.me" };
+
+    public final static String DEVICE_ID_UUID_FILENAME  = "uuid.txt";
+
     /* push action */
     public static final String PUSH_ACTION_ALERT        = "alert";      // 알럿메시지!
 

@@ -76,13 +76,31 @@
     <string name="setting_check_gps">정확한 위치정보 사용을 위하여 GPS를 활성화 하셔야 합니다.</string>
     <string name="setting_check_bluetooth">Bluetooth must be enabled to use indoor navigation and AR view.</string>
 
-    <string name="permission_gps_message"><![CDATA[If GPS is not turned on, \nYou can not use the navigation service. \n\nPlease turn on GPS in the device settings.]]></string>
-    <string name="permission_ble_message"><![CDATA[If bluetooth is off, \nYou can not use indoor directions and AR view. \n\nPlease turn on Bluetooth in the device settings.]]></string>
-    <string name="permission_phone_message"><![CDATA[If the phone status is unknown, some features may be limited.]]></string>
-    <string name="permission_camera_message"><![CDATA[If you do not have camera usage rights, you can not use AR view.]]></string>
-    <string name="permission_account_message"><![CDATA[Some functions may be restricted if access to the user information set on the phone is denied.]]></string>
-    <string name="permission_storage_message"><![CDATA[If you do not have permission to use an external storage device, the app may not work properly.]]></string>
-    <string name="permission_phonenumber_message">신속한 사용자 인증을 위하여 전화기의 전화번호를 확인합니다.</string>
+    <string name="permission_alert_title">앱 권한요청</string>
+
+    <string name="permission_alert_body"><![CDATA[원활한 서비스 이용을 위하여 다음 사용권한을 허용하셔야 합니다.]]></string>
+    <string name="permission_default_mesg"><![CDATA[앱 구동을 위한 기본 권한이 허용되지 않을경우 앱을 정상적으로 실행되지 않습니다.]]></string>
+
+    <string name="permission_all_message">어플리케이션의 원활한 동작을 위한 앱 권한이 승인되지 않았습니다.\n일부 서비스 이용중 요류가 발생할 수 있습니다.</string>
+
+    <string name="permission_gps_message"><![CDATA[원활한 서비스 제공을 위하여 현재 위치 정보를 사용하고자 합니다.]]></string>
+    <string name="permission_gps_fine_message"><![CDATA[원활한 서비스 제공을 위하여 현재 LTE를 통한 위치 정보를 사용하고자 합니다.]]></string>
+    <string name="permission_back_gps_message"><![CDATA[원활한 서비스 제공을 위하여 현재 위치 정보를 백그라운드모두에서 사용하고자 합니다.]]></string>
+    <string name="permission_ble_message"><![CDATA[원활한 서비스 제공을 위하여 블루투스 정보를 사용하고자 합니다.]]></string>
+    <string name="permission_phone_message"><![CDATA[전화발신 권한을 사용하고자 합니다.]]></string>
+    <string name="permission_contacts_message"><![CDATA[전화번호부 권한을 사용하고자 합니다.]]></string>
+    <string name="permission_camera_message"><![CDATA[원활한 서비스 제공을 위하여 카메라를 사용하고자 합니다.]]></string>
+    <string name="permission_account_message"><![CDATA[원활한 서비스 제공을 위하여 단말 계정 정보를 사용하고자 합니다.]]></string>
+    <string name="permission_storage_message"><![CDATA[원활한 서비스 제공을 위하여 저장장치를 사용하고자 합니다.]]></string>
+    <string name="permission_phonenumber_message"><![CDATA[원활한 서비스 제공을 위하여 단말 계정 정보를 사용하고자 합니다.]]></string>
+    <string name="permission_audio_record"><![CDATA[원활한 서비스 제공을 위하여 마이크장치를 사용하고자 합니다.]]></string>
+    <string name="permission_outgoing_message"><![CDATA[원활한 서비스 제공을 위하여 전화 발신정보를 확인하고자 합니다.]]></string>
+
+    <string name="permission_incomming_message"><![CDATA[원활한 서비스 제공을 위하여 SMS 수신정보를 확인하고자 합니다.]]></string>
+
+    <string name="permission_error_message">해당 서비스의 동작을 위한 앱 권한이 승인되지 않았습니다.\n권한이 거부된 경우 해당 서비스를 이용하실 수 없습니다.</string>
+
+    <string name="update_check_error">일시적인 서버오류가 발생하였습니다.</string>
 
     <string name="url_site" translatable="false">https://domaado.me</string>
     <string name="url_site_test" translatable="false">https://test.domaado.me</string>
@@ -125,6 +143,7 @@
     <string name="btn_neutral">아니오</string>
     <string name="btn_no">아니오</string>
     <string name="btn_ok">확인</string>
+    <string name="btn_retry">재시도</string>
     <string name="btn_cancel">취소</string>
     <string name="btn_close">닫기</string>
     <string name="btn_next">다음</string>
@@ -160,6 +179,9 @@
     <string name="btn_once">이번만</string>
     <string name="btn_continue">계속</string>
     <string name="choose_camera_app">선택해주세요</string>
+
+    <string name="btn_gallery">갤러리</string>
+    <string name="btn_camera">카메라</string>
 
     <!-- sub_title -->
     <string name="sub_title_text">Recent history</string>

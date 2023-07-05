@@ -3,10 +3,11 @@ package com.domaado.mobileapp;
 import android.app.Activity;
 import android.app.Application;
 import android.location.Location;
+import android.text.TextUtils;
 
+import com.domaado.mobileapp.data.MemberEntry;
 import com.domaado.mobileapp.data.QueryParams;
 import com.domaado.mobileapp.widget.myLog;
-import com.onesignal.OSDeviceState;
 import com.onesignal.OneSignal;
 
 import org.acra.ACRA;
@@ -37,17 +38,18 @@ public class App extends Application {
 
 	public static QueryParams queryParams;
 
-	public static String callCenterTel;
-
-	public static String centerIdx;
-	public static String driverIdx;
 	public static Location currentLocation;
 
 	public static boolean isTEST = false;
 
 	public static byte[] keyByte;
 	public static byte[] ivByte;
-	
+
+	public static String fcmToken;
+	public static String accessToken;
+
+	public static MemberEntry memberEntry;
+
 	@Override
 	public void onCreate() {
 		
@@ -110,7 +112,6 @@ public class App extends Application {
 		if(queryParams!=null) {
 			queryParams.setTitle(null);
 			queryParams.setMessage(null);
-			queryParams.setResponseId(null);
 			queryParams.setAction(null);
 			queryParams.setLat(0);
 			queryParams.setLon(0);
@@ -122,30 +123,6 @@ public class App extends Application {
 		return queryParams;
 	}
 
-	public synchronized static String getCallCenterTel() {
-		return callCenterTel;
-	}
-
-	public synchronized static void setCallCenterTel(String callCenterTel) {
-		App.callCenterTel = callCenterTel;
-	}
-
-	public synchronized static String getCenterIdx() {
-		return centerIdx;
-	}
-
-	public synchronized static void setCenterIdx(String centerIdx) {
-		App.centerIdx = centerIdx;
-	}
-
-	public synchronized static String getDriverIdx() {
-		return driverIdx;
-	}
-
-	public synchronized static void setDriverIdx(String driverIdx) {
-		App.driverIdx = driverIdx;
-	}
-
 	public synchronized static Location getCurrentLocation() {
 		if(currentLocation==null) currentLocation = new Location("gps");
 		return currentLocation;
@@ -153,6 +130,22 @@ public class App extends Application {
 
 	public synchronized static void setCurrentLocation(Location currentLocation) {
 		App.currentLocation = currentLocation;
+	}
+
+	public static String getFcmToken() {
+		return fcmToken;
+	}
+
+	public synchronized static void setFcmToken(String fcmToken) {
+		App.fcmToken = fcmToken;
+	}
+
+	public static String getAccessToken() {
+		return accessToken;
+	}
+
+	public synchronized static void setAccessToken(String accessToken) {
+		App.accessToken = accessToken;
 	}
 
 	public static byte[] getKeyByte() {
@@ -169,5 +162,20 @@ public class App extends Application {
 
 	public static void setIvByte(byte[] ivByte) {
 		App.ivByte = ivByte;
+	}
+
+	public static MemberEntry getMemberEntry() {
+		return memberEntry;
+	}
+
+	public static void setMemberEntry(MemberEntry memberEntry) {
+		App.memberEntry = memberEntry;
+	}
+
+	public synchronized static boolean hasMember() {
+		boolean ret = false;
+		if(getMemberEntry()!=null && !TextUtils.isEmpty(getMemberEntry().getUserSeq())) ret = true;
+
+		return ret;
 	}
 }

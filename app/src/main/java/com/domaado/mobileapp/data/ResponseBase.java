@@ -3,15 +3,16 @@ package com.domaado.mobileapp.data;
 import android.text.TextUtils;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Locale;
+
+import com.domaado.mobileapp.network.SecureNetworkUtil;
 
 /**
  * Created by jameshong on 2018. 5. 29..
  */
 
 public class ResponseBase implements Serializable {
-    public String[] fields = { "request_id", "response_yn", "message" };
+    public String[] baseFields = { "request_id", "response_yn", "message" };
 
     int seq;
     String requestId;
@@ -44,7 +45,7 @@ public class ResponseBase implements Serializable {
     }
 
     public String getMessage() {
-        return message;
+        return getNotNullString(message);
     }
 
     public void setMessage(String message) {
@@ -52,15 +53,41 @@ public class ResponseBase implements Serializable {
     }
 
     public void setBase(String key, String value) {
-        if(fields[0].equals(key)) setRequestId(value);
-        else if(fields[1].equals(key)) setResponseYn(value);
-        else if(fields[2].equals(key)) setMessage(value);
+        if(baseFields[0].equals(key)) setRequestId(value);
+        else if(baseFields[1].equals(key)) setResponseYn(value);
+        else if(baseFields[2].equals(key)) setMessage(value);
+    }
+
+    public String getDecString(String encString) {
+
+        try {
+            String decString = SecureNetworkUtil.getDecStringBase64(encString);
+            return decString;
+        } catch(Exception e) {
+            e.printStackTrace();
+
+            return encString;
+        }
+    }
+
+    public String getEncString(String string) {
+        try {
+            string = SecureNetworkUtil.getEncStringBase64(string);
+            return string;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return string;
+        }
+    }
+
+    public String getNotNullString(String value) {
+        if("null".equalsIgnoreCase(value) || TextUtils.isEmpty(value)) return "";
+        else return value;
     }
 
     @Override
     public String toString() {
         return "ResponseBase{" +
-                "fields=" + Arrays.toString(fields) +
                 ", seq=" + seq +
                 ", requestId='" + requestId + '\'' +
                 ", responseYn='" + responseYn + '\'' +

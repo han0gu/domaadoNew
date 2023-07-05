@@ -4,9 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -14,7 +11,7 @@ import java.util.HashMap;
 /**
  * Created by jameshong on 2018. 5. 30..
  */
-public class ClientUserEntry extends EntryBase implements Serializable {
+public class MemberEntry extends EntryBase implements Serializable {
 
     public String[] fields = { "user_seq", "usr_nick_name", "email", "mobile_no", "user_yn", "user_profile_img", "user_type_nm", "country_code", "topic" };
 
@@ -31,7 +28,7 @@ public class ClientUserEntry extends EntryBase implements Serializable {
     Bitmap userProfileBitmap;
     Uri userProfilePhotoUri;
 
-    public ClientUserEntry() {
+    public MemberEntry() {
         this.userProfileBitmap = null;
     }
 
@@ -175,7 +172,7 @@ public class ClientUserEntry extends EntryBase implements Serializable {
 
     @Override
     public String toString() {
-        return "ClientUserEntry{" +
+        return "MemberEntry{" +
                 "userSeq='" + userSeq + '\'' +
                 ", usrNickName='" + usrNickName + '\'' +
                 ", email='" + email + '\'' +

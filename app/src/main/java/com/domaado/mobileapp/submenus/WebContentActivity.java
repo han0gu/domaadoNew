@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,11 +46,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.domaado.mobileapp.camera.BottomSelectDialog;
 import com.domaado.mobileapp.camera.CameraUtil;
 import com.domaado.mobileapp.camera.ImagePickerActivity;
 import com.domaado.mobileapp.data.CheckUpdateRequest;
-import com.domaado.mobileapp.data.ClientUserEntry;
+import com.domaado.mobileapp.data.MemberEntry;
 import com.domaado.mobileapp.data.PhotoEntry;
+import com.domaado.mobileapp.data.UserProfileResponse;
 import com.domaado.mobileapp.data.UserProfileUpdateRequest;
 import com.domaado.mobileapp.data.UserProfileUpdateResponse;
 import com.domaado.mobileapp.network.UrlManager;
@@ -85,7 +86,6 @@ import com.onesignal.OSDeviceState;
 import com.onesignal.OneSignal;
 
 import org.apache.http.util.EncodingUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -123,6 +123,13 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
     public final static String ACTION_FILTER = "com.domaado.mobileapp.firebase.action";
     public final static String ACTION_UPDATE_LOCATION = "com.domaado.mobileapp.update.location";
+
+    public class UploadData {
+        String url;
+        String params;
+    }
+
+    private UploadData uploadData;
 
 //    private Timer mTimer;
 
@@ -564,7 +571,6 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         final String action = queryParams.getAction();
         final String title = !TextUtils.isEmpty(queryParams.getTitle()) ? queryParams.getTitle() : getResources().getString(R.string.push_title);
         final String message = !TextUtils.isEmpty(queryParams.getMessage()) ? queryParams.getMessage() : getResources().getString(R.string.push_message);
-        final String responseId = queryParams.getResponseId();
 
         if(Constant.PUSH_ACTION_ALERT.equalsIgnoreCase(action)) {
             Common.alertMessage(
@@ -1004,6 +1010,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{"0"}));
             }
 
+            @Override
             public void autologin(String callback) {
                 String loginid = Common.getSharedPreferencesString(Constant.AUTO_LOGIN_ID, WebContentActivity.this);
                 String loginpw = Common.getSharedPreferencesString(Constant.AUTO_LOGIN_PW, WebContentActivity.this);
@@ -1011,7 +1018,10 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{loginid, loginpw}));
             }
 
-            public void onMedia(int type, String callback) {
+            @Override
+            public void onMedia(int type, String uploadUrl, String dataVal, String callback) {
+                myLog.e(TAG, "** onMedia: "+type+", uploadUrl: "+uploadUrl+", dataVal: "+dataVal+", callback: "+callback);
+
                 switch(type) {
                     case 0: // camera
                         break;
@@ -1023,8 +1033,21 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                         break;
                 }
 
+                uploadData = new UploadData();
+                uploadData.url = uploadUrl;
+                uploadData.params = dataVal;
+
                 //ImagePickerActivity.REQUEST_GALLERY_IMAGE
                 updateProfileImage(type);
+            }
+
+            @Override
+            public void selectCapture(String uploadUrl, String dataVal, String callback) {
+                uploadData = new UploadData();
+                uploadData.url = uploadUrl;
+                uploadData.params = dataVal;
+
+                selectCaptureMedia();
             }
 
             @Override
@@ -1532,26 +1555,33 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 android.os.Build.PRODUCT.contains("sdk");
     }
 
-    private void updateProfileImage(int option) {
-        CameraUtil cameraUtil = new CameraUtil(this);
-        cameraUtil.launchGalleryIntent(CameraUtilResult, option);
+    private void updateProfileImage(final int option) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                CameraUtil cameraUtil = new CameraUtil(WebContentActivity.this);
+                cameraUtil.launchGalleryIntent(CameraUtilResult, option);
+            }
+        });
     }
 
     private void procProfilePhoto(Uri uri) {
-        final ImageView user_profile_edit_img = findViewById(R.id.user_profile_edit_img);
 
         if(uri!=null) {
             try {
                 myLog.e(TAG, "*** procProfilePhoto uri: "+uri.toString());
 
-                Common.loadImageCache(this, uri.toString(), user_profile_edit_img, (int)Common.convertDpToPixel(this, 107), new Handler(msg -> {
+                Common.loadImageCache(this, uri.toString(), new Handler(msg -> {
 
                     switch(msg.what) {
                         case 0: {
                             if(msg.obj instanceof PhotoEntry) {
                                 PhotoEntry photoEntry = (PhotoEntry) msg.obj;
 
-                                sendProfileData(clientUserEntry, photoEntry);
+                                photoEntry.setPhotoUrl(uploadData.url);
+                                photoEntry.setPhotoParam(uploadData.params);
+
+                                sendProfileData(App.getMemberEntry(), photoEntry);
                             } else {
                                 Toast.makeText(this, "UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
                             }
@@ -1576,12 +1606,13 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 Bitmap bitmap = Common.getUriImage(this, uri);
                 if(bitmap!=null) {
 
-                    user_profile_edit_img.setImageBitmap(bitmap);
-
                     PhotoEntry photoEntry = new PhotoEntry();
                     photoEntry.setPhotoData(bitmap);
 
-                    sendProfileData(clientUserEntry, photoEntry);
+                    photoEntry.setPhotoUrl(uploadData.url);
+                    photoEntry.setPhotoParam(uploadData.params);
+
+                    sendProfileData(App.getMemberEntry(), photoEntry);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1591,9 +1622,9 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private void sendProfileData(final ClientUserEntry clientUserEntry, final PhotoEntry photoEntry) {
+    private void sendProfileData(final MemberEntry memberEntry, final PhotoEntry photoEntry) {
         UserProfileUpdateRequest userProfileUpdateRequest = new UserProfileUpdateRequest(this);
-        userProfileUpdateRequest.setClientUserEntry(clientUserEntry);
+        userProfileUpdateRequest.setClientUserEntry(memberEntry);
         userProfileUpdateRequest.setPhotoEntry(photoEntry);
 
         UserProfileUpdateTask userProfileUpdateTask = new UserProfileUpdateTask(this, userProfileUpdateRequest, false, new Handler(msg -> {
@@ -1608,7 +1639,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 case Constant.RESPONSE_FAILURE: {
                     String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_json_data_error);
                     // alertMessage =
-                    Common.alertMessage(MyPageEditActivity.this,
+                    Common.alertMessage(WebContentActivity.this,
                             getResources().getString(R.string.app_name),
                             message,
                             getResources().getString(R.string.btn_ok),
@@ -1620,7 +1651,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 case Constant.RESPONSE_TIMEOUT: {
                     String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_response_error);
                     // alertMessage =
-                    Common.alertMessage(MyPageEditActivity.this,
+                    Common.alertMessage(WebContentActivity.this,
                             getResources().getString(R.string.app_name),
                             message,
                             getResources().getString(R.string.btn_retry),
@@ -1628,7 +1659,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                             new Handler(msg2 -> {
                                 switch(msg2.what) {
                                     case Constant.ALERTDIALOG_RESULT_YES:
-                                        sendProfileData(clientUserEntry, photoEntry);
+                                        sendProfileData(memberEntry, photoEntry);
                                         break;
                                     default:
                                         break;
@@ -1643,5 +1674,27 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         }));
 
         userProfileUpdateTask.execute(Constant.SITE_URL[myLog.debugMode?1:0], UrlManager.getPhotoProfileUpdateAPI(this));
+    }
+
+    private void parseResponse(UserProfileUpdateResponse response) {
+
+    }
+
+    /**
+     * 여기에서 카메라, 갤러리를 선택한다.
+     */
+    private void selectCaptureMedia() {
+        ImagePickerActivity.showImagePickerOptions(this, new ImagePickerActivity.PickerOptionListener() {
+            @Override
+            public void onTakeCameraSelected() {
+                updateProfileImage(ImagePickerActivity.REQUEST_IMAGE_CAPTURE);
+            }
+
+            @Override
+            public void onChooseGallerySelected() {
+                updateProfileImage(ImagePickerActivity.REQUEST_GALLERY_IMAGE);
+            }
+        });
+
     }
 }

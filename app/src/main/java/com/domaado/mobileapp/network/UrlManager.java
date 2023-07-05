@@ -25,7 +25,7 @@ public class UrlManager {
         return App.isIsTEST() ? ctx.getResources().getString(R.string.url_api_site_test) : ctx.getResources().getString(R.string.url_api_site);
     }
 
-    public static String getCheckUpdate(Context ctx) {
+    public static String getCheckUpdateAPI(Context ctx) {
         return ctx.getResources().getString(R.string.url_check_update);
     }
 

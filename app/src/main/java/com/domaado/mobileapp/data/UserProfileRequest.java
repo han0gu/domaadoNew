@@ -13,10 +13,10 @@ public class UserProfileRequest extends RequestBase  implements Serializable {
     public String[] OBJECTS_KEY = { "data" };
     public String[] fields = { "clientuser" };
 
-    ClientUserEntry clientUserEntry;
+    MemberEntry memberEntry;
 
     public UserProfileRequest() {
-        clientUserEntry = new ClientUserEntry();
+        memberEntry = new MemberEntry();
     }
 
     public UserProfileRequest(Context ctx) {
@@ -34,18 +34,18 @@ public class UserProfileRequest extends RequestBase  implements Serializable {
         return map;
     }
 
-    public ClientUserEntry getClientUserEntry() {
-        return clientUserEntry;
+    public MemberEntry getClientUserEntry() {
+        return memberEntry;
     }
 
-    public void setClientUserEntry(ClientUserEntry clientUserEntry) {
-        this.clientUserEntry = clientUserEntry;
+    public void setClientUserEntry(MemberEntry memberEntry) {
+        this.memberEntry = memberEntry;
     }
 
     @Override
     public String toString() {
         return "UserProfileRequest{" +
-                "clientUserEntry=" + clientUserEntry.toString() +
+                "clientUserEntry=" + memberEntry.toString() +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 ", requestType='" + requestType + '\'' +

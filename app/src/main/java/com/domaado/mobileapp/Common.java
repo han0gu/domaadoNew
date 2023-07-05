@@ -3038,4 +3038,227 @@ public class Common {
 
 	}
 
+	public static void loadImageCache(Context context, String url, final Handler handler) {
+
+		try {
+
+			final Message message = new Message();
+			PhotoEntry photoEntry = new PhotoEntry();
+
+			if (TextUtils.isEmpty(url)) {
+				return;
+			}
+
+			final String filepath = getCacheFileName(context, url);
+			Date lastModDate = new Date();
+			long fileSize = 0;
+			String fname = "";
+			if ((new File(filepath)).exists()) {
+				File file = new File(filepath);
+				fname = Uri.fromFile(file).getLastPathSegment();
+				lastModDate = new Date(file.lastModified());
+				fileSize = file.length();
+
+				photoEntry.setPhotoName(getLastFilename(url));
+				photoEntry.setPhotoType(getMimeType(url));
+
+			}
+
+			boolean doCache = false;
+			String cacheName = "image_cache_" + fname;
+			if (!TextUtils.isEmpty(fname)) {
+				String ts = getSharedPreferencesString(cacheName, context);
+
+				String ca = String.format(Locale.getDefault(), "%s%s", String.valueOf(lastModDate.getTime()), String.valueOf(fileSize));
+
+				if (!TextUtils.isEmpty(ca) && ca.equals(ts)) {
+					doCache = true;
+				}
+			}
+
+			// 캐시처리가 아니라면!
+			if (!doCache) {
+//			if (!(new File(filepath)).exists() || lastModDate.getTime() < lastSeconds) {
+
+				if (url.contains("http") && url.contains("?"))
+					url = String.format("%s&ts=%s", url, String.valueOf(System.currentTimeMillis()));
+				else if (url.contains("http"))
+					url = String.format("%s?ts=%s", url, String.valueOf(System.currentTimeMillis()));
+
+//				myLog.d(TAG, "*** loadImageCache: url: "+url);
+
+				DisplayImageOptions options;
+
+				ImageLoader imageLoader = ImageLoader.getInstance();
+
+				if (!imageLoader.isInited())
+					imageLoader.init(ImageLoaderConfiguration.createDefault(context));
+
+				options = new DisplayImageOptions.Builder()
+						.showImageForEmptyUri(R.drawable.ic_launcher)
+						.showImageOnFail(R.drawable.ic_launcher)
+						.resetViewBeforeLoading()
+						.imageScaleType(ImageScaleType.IN_SAMPLE_INT)
+						.bitmapConfig(Bitmap.Config.RGB_565)
+						.displayer(new FadeInBitmapDisplayer(300))
+						.cacheOnDisk(false)
+						.build();
+
+				//String fullurl = Constant.SITE_URL[Constant.ISTEST]+File.separator+url;
+
+//				String encodedUrl = URLEncoder.encode(url, "UTF-8");
+
+//				myLog.d(TAG, "*** loadImageCache: url: "+url);
+				String newUrl = url;
+				try {
+					newUrl = URLDecoder.decode(url, "UTF-8");
+				} catch (Exception e) {
+				}
+//				myLog.d(TAG, "*** loadImageCache: newUrl: "+newUrl);
+
+				imageLoader.loadImage(newUrl, options, new ImageLoadingListener() {
+					@Override
+					public void onLoadingStarted(String s, View view) {
+
+					}
+
+					@Override
+					public void onLoadingFailed(String s, View view, FailReason failReason) {
+						String errMessage = null;
+						switch (failReason.getType()) {
+							case IO_ERROR:
+								errMessage = "Input/Output error";
+								break;
+							case OUT_OF_MEMORY:
+								errMessage = "Out Of Memory error";
+								break;
+							case NETWORK_DENIED:
+								errMessage = "Downloads are denied";
+								break;
+							case DECODING_ERROR:
+								errMessage = "Unsupported URI scheme";
+								break;
+							case UNKNOWN:
+								errMessage = "Unknown error";
+								break;
+						}
+
+						if (handler != null) {
+							message.what = 1;
+							message.obj = errMessage;
+
+							handler.sendMessage(message);
+						}
+					}
+
+					@Override
+					public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+
+						photoEntry.setPhotoData(bitmap);
+
+						if (handler != null) {
+							message.what = 0;
+							message.obj = photoEntry; //bitmap;
+
+							handler.sendMessage(message);
+						}
+					}
+
+					@Override
+					public void onLoadingCancelled(String s, View view) {
+						if (handler != null) {
+							message.what = 2;
+							message.obj = s;
+
+							handler.sendMessage(message);
+						}
+					}
+				});
+			} else {
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inPreferredConfig = Bitmap.Config.RGB_565;
+				Bitmap bitmap = BitmapFactory.decodeFile(filepath, options);
+
+				photoEntry.setPhotoData(bitmap);
+
+				if (handler != null) {
+					message.what = 0;
+					message.obj = photoEntry; // bitmap;
+
+					handler.sendMessage(message);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			if (handler != null) {
+				Message message = new Message();
+				message.what = 1;
+				message.obj = e.getLocalizedMessage();
+
+				handler.sendMessage(message);
+			}
+		}
+
+	}
+
+	@NonNull
+	public static byte[] hexToByteArray(String hex) {
+		if(!TextUtils.isEmpty(hex)) {
+			hex = hex.length() % 2 != 0 ? "0" + hex : hex;
+
+			byte[] b = new byte[hex.length() / 2];
+
+			for (int i = 0; i < b.length; i++) {
+				int index = i * 2;
+				int v = Integer.parseInt(hex.substring(index, index + 2), 16);
+				b[i] = (byte) v;
+			}
+			return b;
+		}
+
+		return new byte[]{};
+
+	}
+
+	public static boolean isEmpty(Object obj) {
+		try {
+			return "null".equalsIgnoreCase(String.valueOf(obj)) || TextUtils.isEmpty(String.valueOf(obj));
+		} catch(Exception e) {}
+		return false;
+	}
+
+	@NonNull
+	public static String valueOf(Object obj) {
+		if(!isEmpty(obj)) {
+			return String.valueOf(obj);
+		} else {
+			return "";
+		}
+	}
+
+	public static String setNewDefaultUUID(Context ctx, String uuid) {
+		final File path = getStoragePath(ctx);
+
+		if (!path.exists()) {
+			path.mkdirs();
+		}
+
+		final File file = new File(path, Constant.DEVICE_ID_UUID_FILENAME);
+
+		try {
+			if (file.exists()) file.delete();
+			writeUUID(file, uuid);
+		} catch (Exception e) {
+			e.printStackTrace();
+			myLog.e(TAG, "*** setNewDefaultUUID Exception: " + e.getMessage());
+			return "ERROR";
+		} finally {
+			myLog.d(TAG, "*** PATH: " + file.toString());
+		}
+
+		return uuid;
+	}
+
 }

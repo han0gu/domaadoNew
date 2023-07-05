@@ -230,7 +230,7 @@
                 android:background="@android:color/black"
                 android:visibility="gone" />
 
-            <kr.huno.myuniverse.camera.CameraControls
+            <com.domaado.mobileapp.camera.CameraControls
                 android:id="@+id/camera_control_box"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"

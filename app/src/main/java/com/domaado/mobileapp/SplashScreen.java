@@ -1,23 +1,13 @@
 package com.domaado.mobileapp;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
@@ -25,51 +15,77 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.domaado.mobileapp.share.KakaoTalklink;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.domaado.mobileapp.data.CheckUpdateRequest;
 import com.domaado.mobileapp.data.CheckUpdateResponse;
 import com.domaado.mobileapp.data.QueryParams;
 import com.domaado.mobileapp.firebase.MyFirebaseMessagingService;
 import com.domaado.mobileapp.locale.LocaleUtils;
-import com.domaado.mobileapp.network.UrlManager;
 import com.domaado.mobileapp.sensors.GPSTracker;
+import com.domaado.mobileapp.share.KakaoTalklink;
 import com.domaado.mobileapp.submenus.WebContentActivity;
-import com.domaado.mobileapp.task.CheckUpdateTask;
-import com.domaado.mobileapp.widget.CustomAlertDialog;
 import com.domaado.mobileapp.widget.myLog;
 import com.kakao.sdk.common.KakaoSdk;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * Intro animation
  */
 public class SplashScreen extends AppCompatActivity {
-
-	private Context mContext;
 	
 	private final static String TAG = SplashScreen.class.getSimpleName();
 	private final static int fi = 500, fo = 500, fd = 1000;
-	private static int SPLASH_TIME_OUT;
-
-	public final static int REQUEST_SETTING_GPS 	= 98;
-	public final static int REQUEST_ENABLE_BT 		= 99;
 
 	AlphaAnimation animFadeIn, animFadeOut;
-	
-	private final int MY_PERMISSION_REQUEST = 100;
-    private Handler permissionHandler;
+	private long SPLASH_TIME_OUT;
 
-	private String[] perms;
-    private String[] permsMessage;
+	private InitialApplication initialApplication;
+	private Handler loadHandler = new Handler(msg -> {
+		switch(msg.what) {
+			case InitialApplication.ERROR_RESPONSE_CONDITION: // 아직은 오류 무시!
+
+			case InitialApplication.NORMAL_USER_CONDITION:
+			case InitialApplication.NEED_LOGIN_CONDITION:
+			case InitialApplication.NEW_USER_CONDITION: {
+				PermissionManager permissionManager = new PermissionManager(this, new CallMethodObject() {
+					@Override
+					public Object call() {
+						loadMainActivity(msg.what, false);
+						return null;
+					}
+				});
+				permissionManager.checkPermissionAll();
+
+				break;
+			}
+
+//			case InitialApplication.NEW_USER_CONDITION:
+//				openTutorials();
+//				break;
+			default:
+				finish();
+				break;
+		}
+		return true;
+	});
+
+	ActivityResultLauncher<Intent> SettingResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+		checkSensors(new CallMethodObject() {
+			@Override
+			public Object call() {
+				initSteps();
+				return null;
+			}
+		});
+	});
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +96,6 @@ public class SplashScreen extends AppCompatActivity {
 		//Common.setTaskBarColored(this, 0);
 
 		LocaleUtils.initialize(this);
-
-		mContext = getBaseContext();
-
-		FirebaseInstanceId.getInstance().getToken();
 
 		ImageView demoImage = (ImageView) findViewById(R.id.intro_logo);
 		int imagesToShow[] = { R.drawable.screen };
@@ -99,9 +111,70 @@ public class SplashScreen extends AppCompatActivity {
 
 		SPLASH_TIME_OUT = (fi + fo + fd) * imagesToShow.length + 300;
 
-		checkSensors();
-
 		setTestMode();
+
+		PermissionManager permissionManager = new PermissionManager(this, new CallMethodObject() {
+			@Override
+			public Object call() {
+
+				runOnUiThread(() -> initSteps());
+
+				return null;
+			}
+		});
+
+		permissionManager.checkPermissionDefault();
+
+		checkUpScheme(getIntent());
+	}
+
+	public void checkUpScheme(@NonNull Intent intent) {
+
+		myLog.e(TAG, "*** checkScheme!");
+
+		if(Intent.ACTION_VIEW.equals(intent.getAction())) {
+			Uri uri = intent.getData();
+
+			String host = uri.getHost();
+			String scheme = uri.getScheme();
+
+			final String q = uri.getQueryParameter("q");
+			QueryParams queryParams = new QueryParams(host, scheme, q);
+			App.setQueryParam(queryParams);
+
+			myLog.e(TAG, "*** checkScheme queryParams: " + queryParams.toString());
+
+		} else if(intent.getExtras()!=null) {
+			Bundle bundle = intent.getExtras();
+			Serializable serializable = bundle!=null ? bundle.getSerializable("queryParams") : null;
+			if(serializable!=null) {
+				QueryParams qp = (QueryParams) serializable;
+				myLog.e(TAG, "*** onResume queryParams: "+qp.toString());
+				App.setQueryParam(qp);
+			}
+		}
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+
+		/**
+		 * FirebaseMessagingService가 시스템을 통해 메시지가 전달되는 경우 {"data": } 내부 데이터가 전달됨.
+		 */
+
+		QueryParams queryParams = new QueryParams();
+		if(intent!=null) {
+			for(String key : queryParams.fields) {
+				if(intent.hasExtra(key)) queryParams.set(key, intent.getStringExtra(key));
+			}
+
+			App.setQueryParam(queryParams);
+
+		}
+
+		myLog.e(TAG, "*** onNewIntent - queryParam: "+(App.getQueryParams()!=null ? App.getQueryParams().toString() : "null"));
+
 	}
 
 	@Override
@@ -124,226 +197,205 @@ public class SplashScreen extends AppCompatActivity {
 
 	}
 
-	private void checkSensors() {
+	private void initSteps() {
+		myLog.e(TAG, "*** initSteps!");
+
+		checkDebug();
+
+		isScheme(getIntent());
+
+		// 퍼미션가이드!
+//		openPermission();
+		initApplication();
+	}
+
+	public boolean checkDebug() {
+		String version = Common.getAppVersion(this);
+		myLog.debugMode = false;
+
+		((TextView)findViewById(R.id.intro_version)).setText(version);
+
+		return myLog.debugMode;
+	}
+
+	private SchemeData schemeData = new SchemeData();
+	class SchemeData {
+		String callbackType;
+		String seq;
+	}
+	private void isScheme(Intent intent) {
+		if(intent!=null) {
+			String callbackType = intent.getStringExtra("callbackType");
+			String seq = intent.getStringExtra("seq");
+
+			if(!TextUtils.isEmpty(callbackType)) {
+				// 스킴으로 접근되어 콜된 상태!
+				schemeData.callbackType = callbackType;
+				schemeData.seq = seq;
+			}
+
+			// PUSH 등으로 앱이 구동되는 경우!
+			QueryParams queryParams = (QueryParams) intent.getSerializableExtra("queryParam");
+			if(queryParams!=null) {
+				myLog.e(TAG, "*** queryParam: "+queryParams.toString());
+				App.setQueryParam(queryParams);
+			}
+		}
+	}
+
+	private void initApplication() {
+		myLog.d(TAG, "*** initApplication!");
+
+		initialApplication = new InitialApplication(this, new InitialApplication.InitialListener() {
+			@Override
+			public void onUpdated(String deviceId, String fcmToken) {
+				myLog.d(TAG, "*** onUpdated!");
+
+				Common.setNewDefaultUUID(SplashScreen.this, deviceId);
+				App.setFcmToken(fcmToken);
+
+				initStart();
+			}
+
+			@Override
+			public void onError(String message, String deviceId) {
+				myLog.e(TAG, "*** ERROR: "+message);
+
+				try {
+					Common.alertMessage(SplashScreen.this,
+							getResources().getString(R.string.app_name),
+							message,
+							getResources().getString(R.string.btn_continue),
+							new Handler(msg -> {
+								Common.setNewDefaultUUID(SplashScreen.this, deviceId);
+								initStart();
+								return true;
+							}));
+				} catch(Exception e) {
+					e.printStackTrace();
+					myLog.e(TAG, "*** Exception: "+e.getMessage());
+					Toast.makeText(SplashScreen.this, message, Toast.LENGTH_SHORT).show();
+				}
+			}
+
+			@Override
+			public void responseSuccess(CheckUpdateResponse response) {
+				myLog.d(TAG, "*** responseSuccess!");
+
+				String hashKey = Common.getKeyHash(SplashScreen.this);
+				myLog.e(TAG, "*** HashKey: "+hashKey);
+
+				if(response!=null && !TextUtils.isEmpty(response.getMessage())) {
+					Toast.makeText(SplashScreen.this, response.getMessage(), Toast.LENGTH_SHORT).show();
+				}
+
+				if(response.getMemberEntry()!=null) {
+					App.setMemberEntry(response.getMemberEntry());
+
+					if(!TextUtils.isEmpty(App.getMemberEntry().getTopic())) {
+						MyFirebaseMessagingService.setTopicSubscribe(SplashScreen.this, App.getMemberEntry().getTopic());
+					} else {
+						myLog.d(TAG, "TOPIC IS EMPTY!");
+					}
+				}
+
+				// 계속사용자인경우 온보딩 SKIP
+//				if("Y".equalsIgnoreCase(response.getContinueUserYn())) {
+//					Common.saveSharedPreferencesString(TutorialsActivity.ONCE_ONBOARDING_SHOW_KEY, "1", SplashScreen.this);
+//				}
+
+				// 디바이스에 연결된 회원이 없는경우
+				if("Y".equalsIgnoreCase(response.getContinueUserYn())) {
+					loadHandler.sendEmptyMessage(InitialApplication.NORMAL_USER_CONDITION);
+				} else if("N".equalsIgnoreCase(response.getContinueUserYn()) && App.hasMember()) {
+					loadHandler.sendEmptyMessage(InitialApplication.NEED_LOGIN_CONDITION);
+				} else {
+					loadHandler.sendEmptyMessage(InitialApplication.NEW_USER_CONDITION);
+				}
+			}
+
+			@Override
+			public void responseFailure(CheckUpdateResponse response) {
+				String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.update_check_error);
+
+				myLog.e(TAG, "*** responseFailure: " + message);
+
+				loadHandler.sendEmptyMessage(InitialApplication.ERROR_RESPONSE_CONDITION);
+
+//				Common.alertMessage(SplashScreen.this,
+//						getResources().getString(R.string.app_name),
+//						message,
+//						getResources().getString(R.string.btn_ok),
+//						new Handler(msg -> {
+//							// API 23이상 퍼미션 체크!
+//							loadHandler.sendEmptyMessage(InitialApplication.ERROR_RESPONSE_CONDITION);
+//							return true;
+//						}));
+			}
+
+			@Override
+			public void responseTimeout(CheckUpdateResponse response) {
+				String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.update_check_error);
+
+				myLog.e(TAG, "*** responseTimeout: " + message);
+
+				loadHandler.sendEmptyMessage(InitialApplication.ERROR_RESPONSE_CONDITION);
+
+//				Common.alertMessage(SplashScreen.this,
+//						getResources().getString(R.string.app_name),
+//						message,
+//						getResources().getString(R.string.btn_ok),
+//						new Handler(msg -> {
+//							// API 23이상 퍼미션 체크!
+//							loadHandler.sendEmptyMessage(InitialApplication.ERROR_RESPONSE_CONDITION);
+//							return true;
+//						}));
+			}
+		});
+
+		initialApplication.initGoogleAppId();
+	}
+
+	private void checkSensors(CallMethodObject callMethodObject) {
+
 		if(!Common.checkGpsOn(this)) {
 			// GPS 꺼짐..
-
 			Common.alertMessage(SplashScreen.this,
 					getResources().getString(R.string.app_name),
 					getResources().getString(R.string.setting_check_gps),
 					getResources().getString(R.string.btn_setting),
 					getResources().getString(R.string.btn_no),
-					new Handler() {
-						@Override
-						public void handleMessage(Message msg) {
-							super.handleMessage(msg);
+					new Handler(msg -> {
+						switch (msg.what) {
+							case Constant.ALERTDIALOG_RESULT_YES:
+								Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+								SettingResult.launch(intent);
+								break;
+							case Constant.ALERTDIALOG_RESULT_NO:
+							case Constant.ALERTDIALOG_RESULT_NUTRUAL:
+								try {
+									callMethodObject.call();
+								} catch(Exception e) {
+									e.printStackTrace();
+								}
 
-							switch (msg.what) {
-								case Constant.ALERTDIALOG_RESULT_YES:
-									Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-									startActivityForResult(intent, REQUEST_SETTING_GPS);
-									break;
-								case Constant.ALERTDIALOG_RESULT_NO:
-								case Constant.ALERTDIALOG_RESULT_NUTRUAL:
-									SplashScreen.this.finish();
-									break;
-							}
+								break;
 						}
-					});
+						return true;
+					}));
 
 
 		} else {
-
-			new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-
-					checkPermission(new Handler() {
-
-						@Override
-						public void handleMessage(Message msg) {
-							super.handleMessage(msg);
-
-//							loadMain();
-							initPosition();
-						}
-					});
-
-				}
-
-				// loading progress add
-			}, SPLASH_TIME_OUT);
-
-		}
-	}
-
-	/**
-	 * 외부링크 유입 처리
-	 */
-	private void checkOutsideLink() {
-
-		myLog.d(TAG, "*** checkOutsideLink");
-
-		if(getIntent()!=null) {
-
-			String title = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_TITLE);
-			String message = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_MESSAGE);
-			String responseId = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_RESPONSE_ID);
-			String action = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_ACTION);
-
-			String lat = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_LAT);
-			String lon = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_LON);
-			String url = getIntent().getStringExtra(MyFirebaseMessagingService.FCM_DATA_URL);
-
-			if(!TextUtils.isEmpty(action)) {
-				App.setQueryParam(new QueryParams(title, message, responseId, action, lat, lon, url));
-
-				myLog.d(TAG, "*** checkOutsideLink getIntent().getAction(): "+getIntent().getAction()+", "
-						+MyFirebaseMessagingService.FCM_DATA_RESPONSE_ID+": "+responseId+", "
-						+MyFirebaseMessagingService.FCM_DATA_TITLE+": "+title+", "
-						+MyFirebaseMessagingService.FCM_DATA_ACTION+": "+action+", "
-						+MyFirebaseMessagingService.FCM_DATA_URL+": "+url);
-			} else {
-				// intent로 값이 전달되지 않았다면, uri에 있는지 확인한다.
-				Uri uri = getIntent().getData();
-
-				if(uri!=null && !TextUtils.isEmpty(uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_ACTION))) {
-
-					String host = uri.getHost();
-					responseId = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_RESPONSE_ID);
-					title = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_TITLE);
-					message = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_MESSAGE);
-					action = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_ACTION);
-
-					lat = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_LAT);
-					lon = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_LON);
-					url = uri.getQueryParameter(MyFirebaseMessagingService.FCM_DATA_URL);
-
-					myLog.d(TAG, "*** checkOutsideLink getIntent().getData(): "+getIntent().getAction()+", "
-							+MyFirebaseMessagingService.FCM_DATA_RESPONSE_ID+": "+responseId+", "
-							+MyFirebaseMessagingService.FCM_DATA_TITLE+": "+title+", "
-							+MyFirebaseMessagingService.FCM_DATA_ACTION+": "+action+", "
-							+MyFirebaseMessagingService.FCM_DATA_URL+": "+url);
-
-					App.setQueryParam(new QueryParams(title, message, responseId, action, lat, lon, url));
-
-				}
+			try {
+				callMethodObject.call();
+			} catch(Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
-	/**
-	 * 업데이트 확인 후 퍼미션 확인!
-	 *
-	 * @param handler
-	 */
-	private void checkAppUpdate(final Handler handler) {
-
-		// 우선 추천인을 받지 않는것으로 설정한다.
-		Common.saveSharedPreferencesString(Constant.CONFIG_RECOMMENDER, Constant.CONFIG_RECOMMENDER_VALUE[0], SplashScreen.this);
-		Common.removeSharedPreferences(Constant.CONFIG_HAVEUPDATE, SplashScreen.this);
-
-		CheckUpdateTask checkUpdateTask = new CheckUpdateTask(this, false, new Handler(msg -> {
-
-			CheckUpdateResponse response = (CheckUpdateResponse) msg.obj;
-
-			switch (msg.what) {
-				case Constant.RESPONSE_SUCCESS: {
-					// 추천인을 받을것인지 확인!
-					if (response != null && "Y".equals(response.getRecommenderYn())) {
-						// 추천인을 받는다!
-						Common.saveSharedPreferencesString(Constant.CONFIG_RECOMMENDER, Constant.CONFIG_RECOMMENDER_VALUE[1], SplashScreen.this);
-					}
-
-					if (response != null && !"Y".equals(Common.toUpperString(response.getMemberYn()))) {
-						Common.saveSharedPreferencesString(Constant.REQUIRE_JOIN, "Y", SplashScreen.this);
-					}
-
-					// 업데이트가 존재하는지!! Y면 있다!
-					if (response != null && "Y".equals(Common.toUpperString(response.getUpdateYn()))) {
-						Common.saveSharedPreferencesString(Constant.CONFIG_HAVEUPDATE, "Y", SplashScreen.this);
-					}
-
-					if (response != null && !TextUtils.isEmpty(response.getCallStatus())) {
-						setStatusData(response);
-					}
-
-					// 기사구분값 저장
-					Common.saveSharedPreferencesString(Constant.DRIVER_GRADE, response.getDriverGrade(), SplashScreen.this);
-
-					if (response != null && !TextUtils.isEmpty(response.getCallcenterTel())) {
-						App.setCallCenterTel("tel:" + response.getCallcenterTel());
-					} else {
-						App.setCallCenterTel(getResources().getString(R.string.cscenter_phone_number));
-					}
-
-					String hashKey = Common.getKeyHash(SplashScreen.this);
-					myLog.e(TAG, "*** HashKey: " + hashKey);
-
-					// 출근상태인지 확인
-					//if("on".equalsIgnoreCase(response.getRecommenderYn())) hasLogin = true;
-
-					// API 23이상 퍼미션 체크!
-					//checkPermission(handler);
-
-					if (handler != null) handler.sendEmptyMessage(0);
-
-					break;
-				}
-				case Constant.RESPONSE_FAILURE:
-				case Constant.RESPONSE_TIMEOUT: {
-					String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : "Update check error!";
-
-//					Toast.makeText(SplashScreen.this, message, Toast.LENGTH_SHORT).show();
-					myLog.e(TAG, "*** RESPONSE_FAILURE: "+message);
-
-					if (handler != null) handler.sendEmptyMessage(0);
-
-//					Common.alertMessage(SplashScreen.this,
-//							getResources().getString(R.string.app_name),
-//							message,
-//							getResources().getString(R.string.btn_ok),
-//							new Handler(msg2 -> {
-//								// API 23이상 퍼미션 체크!
-//								//checkPermission(handler);
-//
-//								if (handler != null) handler.sendEmptyMessage(0);
-//
-//								return true;
-//							}));
-					break;
-				}
-			}
-
-			return true;
-
-		}));
-
-		checkUpdateTask.execute(UrlManager.getServerUrl(this), UrlManager.getCheckUpdate(this));
-	}
-
-	private void setStatusData(CheckUpdateResponse response) {
-		String data = response.getCallStatus();
-
-		try {
-			data = new String(Common.getBase64decode(data));
-			JSONObject json = new JSONObject(data).getJSONObject("data");
-
-			myLog.d(TAG, "*** json: "+json.toString());
-
-			String responseId = json.has("response_id") ? json.getString("response_id") : response.getResponseId();
-			String action = json.has("action") ? json.getString("action") : response.getCallStatus();
-			String url = json.has("url") ? json.getString("url") : "";
-
-			App.setQueryParam(new QueryParams("", "", responseId, action, response.getCustomerLat(), response.getCustomerLon(), url));
-
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+	private void initStart() {
+		initPosition();
 	}
 
 	/**
@@ -351,7 +403,7 @@ public class SplashScreen extends AppCompatActivity {
 	 *
 	 * @return
 	 */
-	private boolean checkDeviceEnvironment() {
+	private boolean checkDeviceEnvironment(int what) {
 		boolean isCheck = false;
 
 		if("Y".equals(Common.getConfig(this, Constant.REQUIRE_JOIN))) {
@@ -360,102 +412,46 @@ public class SplashScreen extends AppCompatActivity {
 		if ("Y".equals(Common.getConfig(this, Constant.CONFIG_HAVEUPDATE))) {
 			isCheck = true;
 			// 업데이트가 존재한다!
-			alertMessage(getResources().getString(R.string.app_name), getResources().getString(R.string.server_have_update), true, new Handler() {
-				@Override
-				public void handleMessage(Message msg) {
-					super.handleMessage(msg);
+			Common.alertMessage(this,
+					getResources().getString(R.string.app_name),
+					getResources().getString(R.string.server_have_update),
+					getResources().getString(R.string.btn_yes),
+					getResources().getString(R.string.btn_no),
+					new Handler(msg -> {
+						switch (msg.what) {
+							case Constant.ALERTDIALOG_RESULT_YES:
+								Common.appDownload(SplashScreen.this, getPackageName());
+								break;
+							default:
+								// 아니오를 눌렀다.
+								Common.saveSharedPreferencesString(Constant.CONFIG_HAVEUPDATE, "P", SplashScreen.this);
+								loadMainActivity(what, true);
+								break;
+						}
+						return true;
+					}));
 
-					if(msg.what == 0) {
-						Common.appDownload(SplashScreen.this, getPackageName());
-					} else {
-						// 아니오를 눌렀다.
-						Common.saveSharedPreferencesString(Constant.CONFIG_HAVEUPDATE, "P", SplashScreen.this);
-
-//						loadMain();
-						initPosition();
-					}
-				}
-			});
-//
-////		} else
-////		if(!Common.checkNetworkStatus(SplashScreen.this)) {
-////			isCheck = true;
-////			// 인터넷 사용불가!
-////			alertMessage(getResources().getString(R.string.app_name), getResources().getString(R.string.can_not_connect_server), false, new Handler() {
-////				@Override
-////				public void handleMessage(Message msg) {
-////					super.handleMessage(msg);
-////
-////					SplashScreen.this.finish();
-////				}
-////			});
-//		} else
-////		if(!Common.checkBluetoothOn(this)) {
-////			isCheck = true;
-////			// 블루투스 꺼짐.
-////			alertMessage(getResources().getString(R.string.app_name), getResources().getString(R.string.setting_check_bluetooth), true, new Handler() {
-////				@Override
-////				public void handleMessage(Message msg) {
-////					super.handleMessage(msg);
-////
-////					if(msg.what == 0) {
-////						Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-////						SplashScreen.this.startActivityForResult(intent, REQUEST_ENABLE_BT);
-////					} else {
-////						SplashScreen.this.finish();
-////					}
-////				}
-////			});
-////		} else
-//		if(!Common.checkGpsOn(this)) {
-//			isCheck = true;
-//			// GPS 꺼짐..
-//			runOnUiThread(new Runnable() {
-//				@Override
-//				public void run() {
-//					Common.alertMessage(SplashScreen.this,
-//							getResources().getString(R.string.setting_check_gps),
-//							getResources().getString(R.string.btn_setting),
-//							getResources().getString(R.string.btn_no),
-//							new Handler() {
-//								@Override
-//								public void handleMessage(Message msg) {
-//									super.handleMessage(msg);
-//
-//									switch(msg.what) {
-//										case Constant.ALERTDIALOG_RESULT_YES:
-//											Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//											startActivityForResult(intent, REQUEST_SETTING_GPS);
-//											break;
-//										case Constant.ALERTDIALOG_RESULT_NO:
-//										case Constant.ALERTDIALOG_RESULT_NUTRUAL:
-//											SplashScreen.this.finish();
-//											break;
-//									}
-//								}
-//							});
-//				}
-//			});
-//
-////			alertMessage(getResources().getString(R.string.app_name), getResources().getString(R.string.setting_check_gps), true, new Handler() {
-////				@Override
-////				public void handleMessage(Message msg) {
-////					super.handleMessage(msg);
-////
-////					if(msg.what == 0) {
-////						//Common.callGPSSetting(mContext);
-////
-////						//loadMain();
-////						Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-////						startActivityForResult(intent, REQUEST_SETTING_GPS);
-////					} else {
-////						SplashScreen.this.finish();
-////					}
-////				}
-////			});
 		}
 
 		return isCheck;
+	}
+
+	private void doCheckUpdate() {
+
+		if(initialApplication!=null) {
+			CheckUpdateRequest checkUpdateRequest = new CheckUpdateRequest(this);
+			if(App.getCurrentLocation()!=null) {
+				checkUpdateRequest.setLat(App.getCurrentLocation().getLatitude());
+				checkUpdateRequest.setLon(App.getCurrentLocation().getLongitude());
+			}
+
+			checkUpdateRequest.setFcmToken(App.getFcmToken());
+
+			initialApplication.checkAppUpdate(checkUpdateRequest);
+		} else {
+			Toast.makeText(this, "APPLICATION IS NOT Initialized!", Toast.LENGTH_SHORT).show();
+			finish();
+		}
 	}
 
 	private void joinMember() {
@@ -467,89 +463,56 @@ public class SplashScreen extends AppCompatActivity {
 
 	}
 
-	private void alertMessage(String title, String message, boolean isCancel, final Handler handler) {
-		final CustomAlertDialog mesgBox = new CustomAlertDialog(this);
-		myLog.d(TAG, "Create alterDialog box!");
+	private void loadMainActivity(int what, boolean skipEnvironment) {
+		loadMainActivity(what, skipEnvironment, false);
+	}
 
-		mesgBox.setMTitle(title); // 팝업 타이틀
-		mesgBox.setMessage(message); // 팝업 내용
-		mesgBox.setCancelable(false);
+	private void loadMainActivity(int what, final boolean skipEnvironment, boolean runMode) {
+		Intent i;
 
-		if(isCancel) {
-			mesgBox.setYesButton((isCancel ? mContext.getString(R.string.btn_setting) : mContext.getString(R.string.btn_close)), new View.OnClickListener() {
-				public void onClick(View v) {
+		if (!checkDeviceEnvironment(what) && !skipEnvironment) {
 
-					if (mesgBox != null) {
-
-						mesgBox.dismiss();
-
-						if(handler != null) {
-							handler.sendEmptyMessage(0);
-						}
-					}
-					return;
-				}
-
-			});
-
-			mesgBox.setNoButton(mContext.getString(R.string.btn_no), new View.OnClickListener() {
-
-				@Override
-				public void onClick(View view) {
-					if (mesgBox != null) {
-
-						mesgBox.dismiss();
-
-						if(handler != null) {
-							handler.sendEmptyMessage(1);
-						}
-					}
-				}
-			});
-		} else {
-			mesgBox.setCloseButton(mContext.getString(R.string.btn_neutral), new View.OnClickListener() {
-				public void onClick(View v) {
-
-					if (mesgBox != null) {
-
-						mesgBox.dismiss();
-
-						if(handler != null) {
-							handler.sendEmptyMessage(0);
-						}
-					}
-					return;
-				}
-
-			});
-		}
-
-		mesgBox.setOnKeyListener( // 백버튼을 눌렀을 때
-				new AlertDialog.OnKeyListener() {
-					@Override
-					public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-						if (keyCode == KeyEvent.KEYCODE_BACK) {
-							dialog.dismiss();
-							dialog = null;
-						}
-						return false;
-					}
-				});
-
-		mesgBox.setCancelable(false);
-
-		try {
-
-			if (mesgBox != null) {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-					mesgBox.create();
-				}
-
-				mesgBox.show();
+			if(schemeData!=null && !TextUtils.isEmpty(schemeData.callbackType)) {
+				setResultData();
+				return;
 			}
-		} catch(Exception e) {
-			e.printStackTrace();
+
+			if(!App.hasMember()) {
+				what = InitialApplication.NEED_LOGIN_CONDITION;
+			}
+
+			switch (what) {
+				case InitialApplication.NORMAL_USER_CONDITION: {
+					i = new Intent(SplashScreen.this, WebContentActivity.class);
+					break;
+				}
+				case InitialApplication.NEED_LOGIN_CONDITION:
+				default: {
+					i = new Intent(SplashScreen.this, WebContentActivity.class);
+					break;
+				}
+			}
+
+			i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+			startActivity(i); //, ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+
+			finish();
+		} else {
+			// 다른 액션으로 진입!
 		}
+	}
+
+	private void setResultData() {
+		Intent intent = new Intent();
+
+		intent.putExtra("callbackType", schemeData.callbackType);
+		intent.putExtra("seq", schemeData.seq);
+
+		setResult(RESULT_OK, intent);
+		finish();
 	}
 
 	/**
@@ -562,88 +525,12 @@ public class SplashScreen extends AppCompatActivity {
 	 */
 	private void loadMain() {
 
-		checkOutsideLink();
+		// 센서 테스트할 때.
+//		loadSensorMain();
+//		finish();
 
 		if(Common.checkNetworkConnect(SplashScreen.this)) {
-
-			if (!checkDeviceEnvironment()) {
-
-				// check update!
-				checkAppUpdate(new Handler() {
-					@Override
-					public void handleMessage(Message msg) {
-						// TODO Auto-generated method stub
-						super.handleMessage(msg);
-
-						switch(msg.what){
-							case 0: {
-								Intent i = new Intent(SplashScreen.this, WebContentActivity.class);
-								i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-								i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-								i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-								startActivity(i);
-
-								finish();
-
-								break;
-							}
-							case 1: {
-								//미허용된 권한이 있다.!
-//								CustomToast toast = new CustomToast(SplashScreen.this);
-//								toast.showToast(getResources().getString(R.string.permission_not_allowed), Toast.LENGTH_LONG);
-//								finish();
-
-								break;
-							}
-						}
-
-					}
-				});
-
-
-
-/**
-				if (Common.isSetConfig(this, Constant.CONFIG_USERLANGUAGE) && Common.isSetConfig(this, Constant.CONFIG_AGREE) && Common.isSetConfig(this, Constant.CONFIG_RECOMMENDER)) {
-
-					if(hasLogin) {
-						Intent i = new Intent(SplashScreen.this, SubContent.class);
-						i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-						startActivity(i);
-					} else {
-						Intent i = new Intent(SplashScreen.this, LoginActivity.class);
-						i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-						startActivity(i);
-					}
-
-				} else {
-					// 언어설정없이 기본언어로 지정!
-					if (!Common.isSetConfig(this, Constant.CONFIG_USERLANGUAGE)) {
-						Locale locale = Common.getConfigLanguageLocale(this);
-						Common.saveSharedPreferencesString(Constant.CONFIG_USERLANGUAGE, locale.getLanguage(), this);
-					}
-
-					int step = !Common.isSetConfig(this, Constant.CONFIG_USERLANGUAGE) ? 0 : !Common.isSetConfig(this, Constant.CONFIG_AGREE) ? 1 :
-							!Common.isSetConfig(this, Constant.CONFIG_RECOMMENDER) ? 2 : 3;
-
-					Intent i = new Intent(SplashScreen.this, Agreement.class);
-					i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-					i.putExtra("step", step);
-
-					startActivity(i);
-				}
- **/
-
-//				finish();
-			}
+			doCheckUpdate();
 		} else {
 			// 인터넷 연결이 안되고 있음.
 			if(!isBackPressed) {
@@ -716,9 +603,9 @@ public class SplashScreen extends AppCompatActivity {
 	 * @param forever
 	 */
 	private void animate(final ImageView imageView, final int images[], final int imageIndex, final boolean forever) {
-				
+
 		myLog.v(TAG, "########## images = " + images[imageIndex] + ", number = "+ imageIndex);
-		
+
 		imageView.setVisibility(View.INVISIBLE);
 		imageView.setImageResource(images[imageIndex]);
 
@@ -728,72 +615,51 @@ public class SplashScreen extends AppCompatActivity {
 			public void onAnimationEnd(Animation animation) {
 				myLog.e(TAG, "########### animFadeOut onAnimationEnd");
 				if (images.length - 1 > imageIndex) {
-	                animate(imageView, images, imageIndex + 1, forever); //Calls itself until it gets to the end of the array
-	            } else {
-	                if (forever == true) {
-	                	animate(imageView, images, 0, forever);  //Calls itself to start the animation all over again in a loop if forever = true
-	                } else {
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								ProgressBar progressBar = (ProgressBar)findViewById(R.id.progress_bar);
-								if(progressBar!=null) {
-									progressBar.setVisibility(View.VISIBLE);
-								}
-							}
-						});
-	                }
-	            }
+					animate(imageView, images, imageIndex + 1, forever); //Calls itself until it gets to the end of the array
+				} else {
+					if (forever == true) {
+						animate(imageView, images, 0, forever);  //Calls itself to start the animation all over again in a loop if forever = true
+					}
+				}
 			}
 
 			@Override
 			public void onAnimationRepeat(Animation animation) {
-				
+
 			}
 
 			@Override
 			public void onAnimationStart(Animation animation) {
 				myLog.d(TAG, "################## animFadeOut  onAnimationStart ");
 			}
-			
+
 		});
-		
+
 		animFadeIn.setAnimationListener(new Animation.AnimationListener() {
-			
+
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				// TODO Auto-generated method stub
 				myLog.e(TAG, "########### animFadeIn onAnimationEnd");
-				
+
 				if(animation == animFadeIn) {
 					myLog.d(TAG, "############ go animFadeOut!");
 					//imageView.setAnimation(animFadeOut);
 					new Handler().postDelayed(new Runnable() {
-					    public void run() {
-					    	fadeinView(findViewById(R.id.introMessage));
+						public void run() {
 							if (images.length - 1 > imageIndex)
 								imageView.startAnimation(animFadeOut);
-							else
-								runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										ProgressBar progressBar = (ProgressBar)findViewById(R.id.progress_bar);
-										if(progressBar!=null) {
-											progressBar.setVisibility(View.VISIBLE);
-										}
-									}
-								});
-					    	
-					    }
+
+						}
 					}, (long)fd);
-					
-				} 
+
+				}
 			}
 
 			@Override
 			public void onAnimationRepeat(Animation animation) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -801,7 +667,7 @@ public class SplashScreen extends AppCompatActivity {
 				// TODO Auto-generated method stub
 				myLog.d(TAG, "################## animFadeIn  onAnimationStart ");
 			}
-			
+
 		});
 
 		imageView.startAnimation(animFadeIn);
@@ -820,130 +686,9 @@ public class SplashScreen extends AppCompatActivity {
 		super.onDestroy();
 	}
 
-//	private void checkPermission(Handler handler) {
-//
-//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//			PermissionManager permissionManager = new PermissionManager(this, handler);
-//			permissionManager.checkPermissionDefault();
-//		} else {
-//			handler.sendEmptyMessage(0);
-//		}
-//
-//	}
-
-	/**
-	 * 마시멜로우이상 버전을 위해 퍼미션 관련 처리
-	 *
-	 * @param perm
-	 * @return
-	 */
-    @TargetApi(Build.VERSION_CODES.M)
-    private boolean isGrantPermission(String perm) {
-    	if(Build.VERSION.SDK_INT < 23) return true;
-
-        return checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED;
-	}
-
-	@SuppressLint("NewApi")
-	private void checkPermission(Handler handler) {
-
-		if(Build.VERSION.SDK_INT < 23) { // 마시멜로우이상이면...
-			myLog.i(TAG, "*** Not need checkPermissions ***");
-			if(permissionHandler != null) permissionHandler.sendEmptyMessage(0);
-		}
-
-		myLog.i(TAG, "*** CheckPermissions ***");
-
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			perms = new String[]{
-					Manifest.permission.READ_PHONE_NUMBERS,
-//			Manifest.permission.GET_ACCOUNTS,
-					Manifest.permission.CAMERA,
-					Manifest.permission.WRITE_EXTERNAL_STORAGE,
-					Manifest.permission.ACCESS_FINE_LOCATION
-			};
-		} else {
-			perms = new String[]{
-					Manifest.permission.READ_PHONE_STATE,
-//			Manifest.permission.GET_ACCOUNTS,
-					Manifest.permission.CAMERA,
-					Manifest.permission.WRITE_EXTERNAL_STORAGE,
-					Manifest.permission.ACCESS_FINE_LOCATION
-			};
-		}
-
-		permsMessage = new String[]{
-				getResources().getString(R.string.permission_phonenumber_message),
-//				getResources().getString(R.string.permission_account_message),
-				getResources().getString(R.string.permission_camera_message),
-				getResources().getString(R.string.permission_storage_message),
-				getResources().getString(R.string.permission_gps_message)
-		};
-
-		ArrayList<String> misPerms = new ArrayList<String>();
-
-		permissionHandler = handler;
-		StringBuffer sb = new StringBuffer("");
-
-		for(int i=0; i < perms.length; i++){
-			if(!isGrantPermission(perms[i])) {
-				misPerms.add(perms[i]);
-
-	            // Should we show an explanation?
-				if (shouldShowRequestPermissionRationale(perms[i])) {
-					if(sb.length()>0) sb.append("\n");
-					sb.append(permsMessage[i]);
-				}
-			}
-		}
-
-		// 미허용된 퍼미션들이 있다면..
-		if(misPerms.size()>0) {
-			String[] mStringArray = new String[misPerms.size()];
-			mStringArray = misPerms.toArray(mStringArray);
-			requestPermissions(mStringArray, MY_PERMISSION_REQUEST);
-		} else {
-			myLog.d(TAG, "permissions allow");
-			if(permissionHandler != null) permissionHandler.sendEmptyMessage(0);
-		}
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-		boolean isFailGranted = false;
-
-		if (requestCode == MY_PERMISSION_REQUEST) {
-			for (int i = 0; i < grantResults.length; i++) {
-				if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-					myLog.d(TAG, "*** onRequestPermissionsResult: " + permissions[i] + ", i=" + i);
-					isFailGranted = true;
-					break;
-				}
-			}
-
-			if (isFailGranted) {
-				if (permissionHandler != null) permissionHandler.sendEmptyMessage(1);
-			} else {
-				if (permissionHandler != null) permissionHandler.sendEmptyMessage(0);
-			}
-		}
-	}
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-
-		switch(requestCode) {
-			case REQUEST_SETTING_GPS:
-				checkSensors();
-				break;
-			case REQUEST_ENABLE_BT:
-				checkSensors();
-
-				break;
-		}
 	}
 
 	private boolean isBackPressed = false;
@@ -963,33 +708,25 @@ public class SplashScreen extends AppCompatActivity {
 		}
 	}
 
-	private GPSTracker gpsTracker;
-
 	private void initPosition() {
 
 		myLog.d(TAG, "*** initPosition ");
 
-		gpsTracker = new GPSTracker(this, "");
-
-		gpsTracker.requestUpdateGPS();
-		updateLocation(gpsTracker.getFastLocation());
+		GPSTracker.getInstance(this).requestUpdateGPS();
+		updateLocation(GPSTracker.getInstance(this).getFastLocation());
 	}
 
 	private void updateLocation(Location location) {
 
-		if(gpsTracker!=null) {
-			gpsTracker.stopUsingGPS();
-		}
+		myLog.d(TAG, "*** updateLocation: "+(location!=null ? location.toString() : "null"));
 
-//		loadMain();
+		GPSTracker.getInstance(this).stopUsingGPS();
 
 		if(location!=null) {
-
 			App.setCurrentLocation(location);
-
 			loadMain();
 		} else {
-
+			loadMain();
 		}
 	}
 }

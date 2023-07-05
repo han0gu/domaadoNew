@@ -11,15 +11,15 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.widget.TextView;
 
-import com.digitalpurpleocean.kaon.Common;
-import com.digitalpurpleocean.kaon.Constant;
-import com.digitalpurpleocean.kaon.R;
-import com.digitalpurpleocean.kaon.data.UserProfileUpdateRequest;
-import com.digitalpurpleocean.kaon.data.UserProfileUpdateResponse;
-import com.digitalpurpleocean.kaon.network.HttpRequestor;
-import com.digitalpurpleocean.kaon.widget.CustomAlertDialog;
-import com.digitalpurpleocean.kaon.widget.JsonUtils;
-import com.digitalpurpleocean.kaon.widget.myLog;
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.Constant;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.data.UserProfileUpdateRequest;
+import com.domaado.mobileapp.data.UserProfileUpdateResponse;
+import com.domaado.mobileapp.network.HttpRequestor;
+import com.domaado.mobileapp.widget.CustomAlertDialog;
+import com.domaado.mobileapp.widget.JsonUtils;
+import com.domaado.mobileapp.widget.myLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,27 +53,23 @@ public class UserProfileUpdateTask extends AsyncTask<String, String, UserProfile
     private Runnable timeoutCheckRunnable = new Runnable() {
         @Override
         public void run() {
-            mesgbox = Common.alertMessage(mActivity, mActivity.getResources().getString(R.string.app_name), mActivity.getResources().getString(R.string.server_response_error), new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    super.handleMessage(msg);
-
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                    }
-
-                    if(timeoutHandler != null) {
-                        timeoutHandler.removeCallbacks(null);
-                    }
-                    mesgbox = null;
-
-                    if(resultHandler!=null) {
-                        msg.what = Constant.RESPONSE_TIMEOUT;
-
-                        resultHandler.sendMessage(msg);
-                    }
+            mesgbox = Common.alertMessage(mActivity, mActivity.getResources().getString(R.string.app_name), mActivity.getResources().getString(R.string.server_response_error), new Handler(msg -> {
+                if (progressDialog != null) {
+                    progressDialog.dismiss();
                 }
-            });
+
+                if(timeoutHandler != null) {
+                    timeoutHandler.removeCallbacks(null);
+                }
+                mesgbox = null;
+
+                if(resultHandler!=null) {
+                    msg.what = Constant.RESPONSE_TIMEOUT;
+
+                    resultHandler.sendMessage(msg);
+                }
+                return true;
+            }));
 
             if (mesgbox != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

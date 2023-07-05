@@ -13,30 +13,30 @@ public class UserProfileResponse extends ResponseBase implements Serializable {
     public String[] OBJECTS_KEY = { "data" };
     public String[] fields = { "clientuser" };
 
-    ClientUserEntry clientUserEntry;
+    MemberEntry memberEntry;
 
     public UserProfileResponse() {
-        clientUserEntry = new ClientUserEntry();
+        memberEntry = new MemberEntry();
     }
 
-    public ClientUserEntry getClientUserEntry() {
-        return clientUserEntry;
+    public MemberEntry getClientUserEntry() {
+        return memberEntry;
     }
 
-    public void setClientUserEntry(ClientUserEntry clientUserEntry) {
-        this.clientUserEntry = clientUserEntry;
+    public void setClientUserEntry(MemberEntry memberEntry) {
+        this.memberEntry = memberEntry;
     }
 
     public void set(String key, Object value) {
         if(fields[0].equalsIgnoreCase(key)) {
             try {
                 JSONObject obj = new JSONObject(String.valueOf(value));
-                ClientUserEntry clientUserEntry = new ClientUserEntry();
-                for(String field : clientUserEntry.fields) {
-                    if(obj.has(field)) clientUserEntry.set(field, obj.get(field));
+                MemberEntry memberEntry = new MemberEntry();
+                for(String field : memberEntry.fields) {
+                    if(obj.has(field)) memberEntry.set(field, obj.get(field));
                 }
 
-                setClientUserEntry(clientUserEntry);
+                setClientUserEntry(memberEntry);
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -51,7 +51,7 @@ public class UserProfileResponse extends ResponseBase implements Serializable {
                 ", requestId='" + requestId + '\'' +
                 ", responseYn='" + responseYn + '\'' +
                 ", message='" + message + '\'' +
-                ", clientUserEntry=" + clientUserEntry.toString() +
+                ", clientUserEntry=" + memberEntry.toString() +
                 '}';
     }
 }

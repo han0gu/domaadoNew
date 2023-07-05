@@ -15,10 +15,13 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.domaado.mobileapp.Constant;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -55,6 +58,14 @@ public class ImagePickerActivity extends AppCompatActivity {
 
     CameraUtil cameraUtil;
 
+    public ActivityResultLauncher<Intent> ActionImageCaptureResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            cropImage(getCacheImagePath(fileName));
+        } else {
+            setResultCancelled();
+        }
+    });
+
     public interface PickerOptionListener {
         void onTakeCameraSelected();
 
@@ -81,6 +92,8 @@ public class ImagePickerActivity extends AppCompatActivity {
         bitmapMaxHeight = intent.getIntExtra(INTENT_BITMAP_MAX_HEIGHT, bitmapMaxHeight);
 
         cameraUtil = new CameraUtil(this);
+
+
 
         int requestCode = intent.getIntExtra(INTENT_IMAGE_PICKER_OPTION, -1);
         if (requestCode == REQUEST_IMAGE_CAPTURE) {
@@ -124,6 +137,7 @@ public class ImagePickerActivity extends AppCompatActivity {
                             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
                             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//                                ActionImageCaptureResult.launch(takePictureIntent);
                                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                             }
                         }
@@ -273,7 +287,7 @@ public class ImagePickerActivity extends AppCompatActivity {
     private Uri getCacheImagePath(String fileName) {
         Uri uri = cameraUtil.getmImageCaptureUri();
 
-        myLog.d(TAG, "*** getCacheImagePath: "+getPackageName() + ".provider");
+        myLog.d(TAG, "*** getCacheImagePath: "+ cameraUtil.FILE_PROVIDER_NAME);
 
         return uri;
 

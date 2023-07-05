@@ -13,7 +13,7 @@ import java.util.HashMap;
  */
 
 public class PhotoEntry extends EntryBase implements Serializable {
-    public String[] fields = { "photo_idx", "photo_type", "photo_name", "photo_url", "photo_data", "user_idx" };
+    public String[] fields = { "photo_idx", "photo_type", "photo_name", "photo_url", "photo_data", "user_idx", "photo_param" };
 
     String photoIdx;
     String photoType;
@@ -21,6 +21,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
     String photoUrl;
     String photoData;
     String userIdx;
+    String photoParam;
 
     public String getPhotoIdx() {
         return photoIdx;
@@ -92,6 +93,14 @@ public class PhotoEntry extends EntryBase implements Serializable {
         this.userIdx = userIdx;
     }
 
+    public String getPhotoParam() {
+        return photoParam;
+    }
+
+    public void setPhotoParam(String photoParam) {
+        this.photoParam = photoParam;
+    }
+
     public HashMap<String, Object> getRequestParameterMap() {
         HashMap<String, Object> map = new HashMap<>();
 
@@ -101,6 +110,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
         map.put(fields[3], getPhotoUrl());
         map.put(fields[4], getPhotoData());
         map.put(fields[5], getUserIdx());
+        map.put(fields[6], getPhotoParam());
 
         return map;
     }
@@ -112,6 +122,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
         else if(fields[3].equalsIgnoreCase(key)) setPhotoUrl(String.valueOf(value));
         else if(fields[4].equalsIgnoreCase(key)) setPhotoData(String.valueOf(value));
         else if(fields[5].equalsIgnoreCase(key)) setUserIdx(String.valueOf(value));
+        else if(fields[6].equalsIgnoreCase(key)) setPhotoParam(String.valueOf(value));
     }
 
     public Object get(String key) {
@@ -121,6 +132,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
         else if(fields[3].equalsIgnoreCase(key)) return getPhotoUrl();
         else if(fields[4].equalsIgnoreCase(key)) return getPhotoData();
         else if(fields[5].equalsIgnoreCase(key)) return getUserIdx();
+        else if(fields[6].equalsIgnoreCase(key)) return getPhotoParam();
         else return null;
     }
 
@@ -133,6 +145,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
                 ", photoUrl='" + photoUrl + '\'' +
                 ", userIdx='" + userIdx + '\'' +
                 ", photoData='" + getPhotoDataLog() + '\'' +
+                ", photoParam='" + photoParam + '\'' +
                 '}';
     }
 }

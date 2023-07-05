@@ -13,11 +13,11 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
     public String[] OBJECTS_KEY = { "data" };
     public String[] fields = { "clientuser", "photo" };
 
-    ClientUserEntry clientUserEntry;
+    MemberEntry memberEntry;
     PhotoEntry photoEntry;
 
     public UserProfileUpdateRequest() {
-        clientUserEntry = new ClientUserEntry();
+        memberEntry = new MemberEntry();
         photoEntry = new PhotoEntry();
     }
 
@@ -37,12 +37,12 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
         return map;
     }
 
-    public ClientUserEntry getClientUserEntry() {
-        return clientUserEntry;
+    public MemberEntry getClientUserEntry() {
+        return memberEntry;
     }
 
-    public void setClientUserEntry(ClientUserEntry clientUserEntry) {
-        this.clientUserEntry = clientUserEntry;
+    public void setClientUserEntry(MemberEntry memberEntry) {
+        this.memberEntry = memberEntry;
     }
 
     public PhotoEntry getPhotoEntry() {
@@ -56,7 +56,7 @@ public class UserProfileUpdateRequest extends RequestBase  implements Serializab
     @Override
     public String toString() {
         return "UserProfileUpdateRequest{" +
-                "clientUserEntry=" + clientUserEntry.toString() +
+                "clientUserEntry=" + memberEntry.toString() +
                 ", photoEntry=" + photoEntry.toString() +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +

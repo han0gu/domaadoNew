@@ -1,28 +1,14 @@
 package com.domaado.mobileapp.task;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.widget.TextView;
-
-import com.domaado.mobileapp.App;
-import com.domaado.mobileapp.Common;
-import com.domaado.mobileapp.Constant;
-
-import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.data.CheckUpdateRequest;
-import com.domaado.mobileapp.data.CheckUpdateResponse;
-import com.domaado.mobileapp.data.ResponseBase;
-import com.domaado.mobileapp.network.HttpRequestor;
-import com.domaado.mobileapp.widget.CustomAlertDialog;
-import com.domaado.mobileapp.widget.JsonUtils;
-import com.domaado.mobileapp.widget.myLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,83 +22,58 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
 
+import com.domaado.mobileapp.Constant;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.data.CheckUpdateRequest;
+import com.domaado.mobileapp.data.CheckUpdateResponse;
+import com.domaado.mobileapp.network.HttpRequestor;
+import com.domaado.mobileapp.widget.JsonUtils;
+import com.domaado.mobileapp.widget.myLog;
+
 /**
  * Created by jameshong on 2018. 1. 17..
  *
  * 새 앱이 존재하는지 확인!
  *
  */
-
 public class CheckUpdateTask extends AsyncTask<String, String, CheckUpdateResponse> {
 
-    private String TAG = "CheckUpdateTask";
+    private String TAG = CheckUpdateTask.class.getSimpleName();
 
-    private Activity mActivity;
+    private Context context;
     private Handler resultHandler;
-
-    private CheckUpdateRequest checkUpdateRequest;
 
     private JSONObject requestBody;
 
     private boolean isShowProgress = true;
     private ProgressDialog progressDialog = null;
     private Handler timeoutHandler = new Handler();
-    CustomAlertDialog mesgbox;
 
     private Runnable timeoutCheckRunnable = new Runnable() {
         @Override
         public void run() {
-            mesgbox = Common.alertMessage(mActivity, mActivity.getResources().getString(R.string.app_name), mActivity.getResources().getString(R.string.server_response_error), new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    super.handleMessage(msg);
+            if(timeoutHandler != null) {
+                timeoutHandler.removeCallbacks(null);
+            }
 
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                    }
+            if(resultHandler!=null) {
+                Message msg = new Message();
+                msg.what = Constant.RESPONSE_TIMEOUT;
 
-                    if(timeoutHandler != null) {
-                        timeoutHandler.removeCallbacks(null);
-                    }
-                    mesgbox = null;
-
-                    if(resultHandler!=null) {
-                        msg.what = Constant.RESPONSE_TIMEOUT;
-
-                        resultHandler.sendMessage(msg);
-                    }
-                }
-            });
-
-            if (mesgbox != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mesgbox.create();
-                }
-
-                mesgbox.show();
+                resultHandler.sendMessage(msg);
             }
         }
     };
 
-    public CheckUpdateTask(Activity act, boolean showProgress, Handler handler) {
-        this.mActivity = act;
+    public CheckUpdateTask(Context context, CheckUpdateRequest request, boolean showProgress, Handler handler) {
+        this.context = context;
         this.isShowProgress = showProgress;
         this.resultHandler = handler;
 
-        checkUpdateRequest = new CheckUpdateRequest(mActivity);
-        checkUpdateRequest.setAppVersion(Common.getVersionBuildCode(mActivity));
-
-        if(App.getCurrentLocation()!=null) {
-            checkUpdateRequest.setLat(App.getCurrentLocation().getLatitude());
-            checkUpdateRequest.setLon(App.getCurrentLocation().getLongitude());
-        }
-
-        checkUpdateRequest.setHashKey(Common.getKeyHash(act));
-
-        HashMap<String, Object> requestBodyMap =  checkUpdateRequest.getRequestParameterMap();
+        HashMap<String, Object> requestBodyMap =  request.getRequestParameterMap();
         requestBody = JsonUtils.mapToJson(requestBodyMap);
 
-        //myLog.d(TAG, "*** body: "+requestBody);
+//        myLog.d(TAG, "*** body: "+requestBody);
     }
 
     @Override
@@ -121,13 +82,13 @@ public class CheckUpdateTask extends AsyncTask<String, String, CheckUpdateRespon
 
         // show progress
         if(isShowProgress) {
-            progressDialog = new ProgressDialog(mActivity);
+            progressDialog = new ProgressDialog(context);
             progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             progressDialog.show();
             progressDialog.setContentView(R.layout.custom_progressdialog_process);
             TextView mesg = (TextView) progressDialog.findViewById(R.id.cpp_progress_message);
 
-            mesg.setText(mActivity.getResources().getString(R.string.server_loading_message));
+            mesg.setText(context.getResources().getString(R.string.server_loading_message));
 
             progressDialog.setCancelable(true);
         }
@@ -152,7 +113,7 @@ public class CheckUpdateTask extends AsyncTask<String, String, CheckUpdateRespon
         try {
             String URLstr = host + path;
             URL mURL = new URL(URLstr);
-            HttpRequestor httpRequestor = new HttpRequestor(mURL, Constant.REUEST_TIMEOUT);
+            HttpRequestor httpRequestor = new HttpRequestor(mURL, Constant.REQUEST_TIMEOUT);
 
             InputStream inputStream = null;
             inputStream = httpRequestor.sendPost("application/json", body);
@@ -229,55 +190,28 @@ public class CheckUpdateTask extends AsyncTask<String, String, CheckUpdateRespon
 
     /**
      *
-     * @param data
+     * @param jsonString
      * @return
      */
-    public ResponseBase getResponse(String data) {
-        ResponseBase response = new ResponseBase();
-
-        try {
-            JSONObject json = new JSONObject(data); //.getJSONObject("response");
-
-            for(String field : response.fields) {
-                if(json.has(field)) response.setBase(field, json.getString(field));
-            }
-
-            myLog.d(TAG, "**************************************************");
-            myLog.d(TAG, response.toString());
-            myLog.d(TAG, "**************************************************");
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return response;
-    }
-
-    /**
-     *
-     * @param data
-     * @return
-     */
-    private CheckUpdateResponse getResponseData(String data) {
+    private CheckUpdateResponse getResponseData(String jsonString) {
 
         CheckUpdateResponse response = new CheckUpdateResponse();
 
         //myLog.d(TAG, "*** decodeData: "+data);
 
         try {
-            ResponseBase responseBase = getResponse(data);
+            JSONObject json = new JSONObject(jsonString);
+            for(String field : response.baseFields) {
+                if(json.has(field)) response.setBase(field, !TextUtils.isEmpty(json.getString(field)) ? json.getString(field) : "");
+            }
 
-            response.setRequestId(responseBase.getRequestId());
-            response.setResponseYn(responseBase.getResponseYn());
-            response.setMessage(responseBase.getMessage());
-
-            if(!TextUtils.isEmpty(responseBase.getResponseYn()) && "Y".equals(responseBase.getResponseYn().toUpperCase())) {
+            if(!TextUtils.isEmpty(response.getResponseYn()) && "Y".equals(response.getResponseYn().toUpperCase())) {
                 // 응답이 성공이면.
-
-                JSONObject json = new JSONObject(data);
-
-                for(String field : response.fields) {
-                    if(json.has(field)) response.set(field, json.getString(field));
+                if(json.has(response.OBJECTS_KEY[0]) && response.fields.length > 0 && !json.isNull(response.OBJECTS_KEY[0])) {
+                    JSONObject data = json.getJSONObject(response.OBJECTS_KEY[0]);
+                    for (String field : response.fields) {
+                        if (data.has(field)) response.set(field, !TextUtils.isEmpty(data.getString(field)) ? data.getString(field) : "");
+                    }
                 }
             }
 

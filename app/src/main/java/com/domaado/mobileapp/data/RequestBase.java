@@ -1,26 +1,28 @@
 package com.domaado.mobileapp.data;
 
 import android.content.Context;
-
-
-import com.domaado.mobileapp.Common;
-import com.domaado.mobileapp.Constant;
+import android.text.TextUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.UUID;
 
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.Constant;
+import com.domaado.mobileapp.network.SecureNetworkUtil;
+
 /**
  * Created by jameshong on 2018. 5. 29..
  */
-
 public class RequestBase implements Serializable {
+    public String[] baseFields = { "request_id", "device_id", "request_type", "request_locale", "deviceinfo" };
+
     String requestId;
     String deviceId;
     String requestType;
     String requestLocale;
 
-    DeviceInfo deviceInfo;
+    DeviceInfo deviceInfo = new DeviceInfo();
 
     public void init(Context ctx) {
         this.requestId = String.valueOf(Common.getUniqueID());
@@ -28,29 +30,25 @@ public class RequestBase implements Serializable {
         this.requestType = Constant.REQUEST_TYPE;
         this.requestLocale = Common.getConfig(ctx, Constant.CONFIG_USERLANGUAGE); //Common.getConfigForServer(ctx, Common.CONFIG_USERLANGUAGE));
 
-        this.deviceInfo = new DeviceInfo();
         this.deviceInfo.setAppVersion(Common.getAppVersion(ctx));
-
     }
 
     public HashMap<String, Object> getBaseParameter() {
         HashMap<String, Object> map = new HashMap<>();
 
-        map.put("request_id", this.getRequestId());
-        map.put("device_id", this.getDeviceId());
-        map.put("request_type", this.getRequestType());
-        map.put("request_locale", this.getRequestLocale());
+        map.put(baseFields[0], this.getRequestId());
+        map.put(baseFields[1], this.getDeviceId());
+        map.put(baseFields[2], this.getRequestType());
+        map.put(baseFields[3], this.getRequestLocale());
 
-        map.put("device_model", this.getDeviceInfo().getDeviceModel());
-        map.put("device_platform", this.getDeviceInfo().getDevicePlatform());
-        map.put("device_version", this.getDeviceInfo().getDeviceVersion());
-        map.put("app_version", this.getDeviceInfo().getAppVersion());
+        map.put(baseFields[4], getDeviceInfo().getRequestParameterMap());
+//        map.putAll(deviceInfo.getRequestParameterMap());
 
         return map;
     }
 
     public String getRequestId() {
-        return requestId;
+        return getNotNullString(requestId);
     }
 
     public void setRequestId(String requestId) {
@@ -58,7 +56,7 @@ public class RequestBase implements Serializable {
     }
 
     public String getDeviceId() {
-        return deviceId;
+        return getNotNullString(deviceId);
     }
 
     public void setDeviceId(String deviceId) {
@@ -66,7 +64,7 @@ public class RequestBase implements Serializable {
     }
 
     public String getRequestType() {
-        return requestType;
+        return getNotNullString(requestType);
     }
 
     public void setRequestType(String requestType) {
@@ -74,7 +72,7 @@ public class RequestBase implements Serializable {
     }
 
     public String getRequestLocale() {
-        return requestLocale;
+        return getNotNullString(requestLocale);
     }
 
     public void setRequestLocale(String requestLocale) {
@@ -87,6 +85,33 @@ public class RequestBase implements Serializable {
 
     public void setDeviceInfo(DeviceInfo deviceInfo) {
         this.deviceInfo = deviceInfo;
+    }
+
+    public String getDecString(String encString) {
+
+        try {
+            String decString = SecureNetworkUtil.getDecStringBase64(encString);
+            return decString;
+        } catch(Exception e) {
+            e.printStackTrace();
+
+            return encString;
+        }
+    }
+
+    public String getEncString(String string) {
+        try {
+            string = SecureNetworkUtil.getEncStringBase64(string);
+            return string;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return string;
+        }
+    }
+
+    public String getNotNullString(String value) {
+        if("null".equalsIgnoreCase(value) || TextUtils.isEmpty(value)) return "";
+        else return value;
     }
 
     @Override
