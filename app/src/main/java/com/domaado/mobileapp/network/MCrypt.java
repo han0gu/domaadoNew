@@ -29,6 +29,23 @@ public class MCrypt {
 
 	public static int maxbyte = 16;
 
+	public MCrypt(byte[] iv, byte[] key) {
+
+		try {
+			ivspec = new IvParameterSpec(iv);
+			keyspec = new SecretKeySpec(key, "AES");
+
+			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public MCrypt(String iv) {
 
 		try {

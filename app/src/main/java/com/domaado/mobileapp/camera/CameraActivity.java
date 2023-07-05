@@ -10,8 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,19 +22,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.domaado.mobileapp.Common;
-import com.domaado.mobileapp.Constant;
-
-import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.type.LatLng;
-import com.domaado.mobileapp.widget.CustomZoomableImageView;
-import com.domaado.mobileapp.widget.myLog;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.Constant;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.widget.CustomZoomableImageView;
+import com.domaado.mobileapp.widget.myLog;
 
 /**
  *
@@ -58,7 +57,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 //    private CallListData callListData;
     private int action;
 
-    private LatLng currentLocation;
 
     private LinearLayout camera_add_buttons;
 
@@ -89,11 +87,6 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 //            callListData = (CallListData) data;
 
             action = getIntent().getIntExtra("action", Constant.RESULT_SEND_ARRIVEDD_PHOTO);
-
-            double lat = getIntent().getDoubleExtra("lat", 0d);
-            double lon = getIntent().getDoubleExtra("lon", 0d);
-
-            currentLocation = new LatLng(lat, lon);
 
             //CAMERA_ORDER_TYPE = getIntent().getStringExtra("orderType");
         }

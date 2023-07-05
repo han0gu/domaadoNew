@@ -314,4 +314,47 @@ public class JavaScriptInterface {
     public void getAppInfo(String callback) {
         if(handleUiListener!=null) handleUiListener.callCallbackResponse(callback);
     }
+
+    @JavascriptInterface
+    public void savelogin(String loginid, String passwd, String callback) {
+        if(handleUiListener!=null) handleUiListener.savelogin(loginid, passwd, callback);
+    }
+
+    @JavascriptInterface
+    public void offlogin(String callback) {
+        if(handleUiListener!=null) handleUiListener.offlogin(callback);
+    }
+
+    @JavascriptInterface
+    public void autologin(String callback) {
+        if(handleUiListener!=null) handleUiListener.autologin(callback);
+    }
+
+    @JavascriptInterface
+    public void camera(String uploadUrl, String dataVal, String callback) {
+        if(handleUiListener!=null) handleUiListener.onMedia(0, uploadUrl, dataVal, callback);
+    }
+
+    @JavascriptInterface
+    public void image(String uploadUrl, String dataVal, String callback) {
+        if(handleUiListener!=null) handleUiListener.onMedia(1, uploadUrl, dataVal, callback);
+    }
+
+    @JavascriptInterface
+    public void picker(String uploadUrl, String dataVal, String callback) {
+        if(handleUiListener!=null) handleUiListener.onMedia(2, uploadUrl, dataVal, callback);
+    }
+
+    @JavascriptInterface
+    public void captureImage(String uploadUrl, String dataVal, String callback) {
+        if(handleUiListener!=null) {
+            handleUiListener.selectCapture(uploadUrl, dataVal, callback);
+        }
+    }
+
+    @JavascriptInterface
+    public void getpushid(String callback) {
+        if(handleUiListener!=null) handleUiListener.getpushid(callback);
+    }
+
 }

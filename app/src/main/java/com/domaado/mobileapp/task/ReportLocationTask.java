@@ -184,7 +184,7 @@ public class ReportLocationTask extends AsyncTask<String, String, ReportLocation
         try {
             JSONObject json = new JSONObject(data); //.getJSONObject("response");
 
-            for(String field : response.fields) {
+            for(String field : response.baseFields) {
                 if(json.has(field)) response.setBase(field, json.getString(field));
             }
 

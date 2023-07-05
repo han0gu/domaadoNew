@@ -2,8 +2,8 @@ package com.domaado.mobileapp.data;
 
 import android.content.Context;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.domaado.mobileapp.Common;
+import com.onesignal.OSDeviceState;
+import com.onesignal.OneSignal;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -14,13 +14,15 @@ import java.util.Map;
  */
 
 public class CheckUpdateRequest extends RequestBase  implements Serializable {
-    String appVersion;
+
+    public String[] OBJECTS_KEY = { "data" };
+    public String[] fields = { "fcm_token", "lat", "lon", "push_id", "hash_key" };
+
     String fcmToken;
+    String lat;
+    String lon;
 
-    String mobileNo;
-
-    double lat;
-    double lon;
+    String oneSignalPushId;
 
     String hashKey;
 
@@ -30,17 +32,9 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
     public CheckUpdateRequest(Context ctx) {
         init(ctx);
 
-        //this.setFcmToken(Common.getSharedPreferencesString("fcm_token", ctx));
-        this.setFcmToken(FirebaseInstanceId.getInstance().getToken());
-        this.setMobileNo(""); //Common.getPhoneNumber(ctx));
-    }
-
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
+        OSDeviceState osDeviceState = OneSignal.getDeviceState();
+        assert osDeviceState != null;
+        setOneSignalPushId(osDeviceState.getPushToken());
     }
 
     public String getFcmToken() {
@@ -51,30 +45,6 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         this.fcmToken = fcmToken;
     }
 
-    public String getMobileNo() {
-        return mobileNo;
-    }
-
-    public void setMobileNo(String mobileNo) {
-        this.mobileNo = mobileNo;
-    }
-
-    public double getLat() {
-        return lat;
-    }
-
-    public void setLat(double lat) {
-        this.lat = lat;
-    }
-
-    public double getLon() {
-        return lon;
-    }
-
-    public void setLon(double lon) {
-        this.lon = lon;
-    }
-
     public String getHashKey() {
         return hashKey;
     }
@@ -83,14 +53,51 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
         this.hashKey = hashKey;
     }
 
+    public String getOneSignalPushId() {
+        return this.oneSignalPushId;
+    }
+
+    public void setOneSignalPushId(String oneSignalPushId) {
+        this.oneSignalPushId = oneSignalPushId;
+    }
+
+    public String getLat() {
+        return lat;
+    }
+
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = String.valueOf(lat);
+    }
+
+    public String getLon() {
+        return lon;
+    }
+
+    public void setLon(String lon) {
+        this.lon = lon;
+    }
+
+    public void setLon(double lon) {
+        this.lon = String.valueOf(lon);
+    }
+
+
     public HashMap<String, Object> getRequestParameterMap() {
         HashMap<String, Object> map = getBaseParameter();
 
-        map.put("fcm_token", this.getFcmToken());
-//        map.put("mobile_no", this.getMobileNo());
-        map.put("lat", this.getLat());
-        map.put("lon", this.getLon());
-        map.put("hashkey", this.getHashKey());
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(fields[0], getFcmToken());
+        data.put(fields[1], getLat());
+        data.put(fields[2], getLon());
+        data.put(fields[3], getOneSignalPushId());
+        data.put(fields[4], getHashKey());
+
+        map.put(OBJECTS_KEY[0], data);
+
 
         return map;
     }
@@ -108,14 +115,16 @@ public class CheckUpdateRequest extends RequestBase  implements Serializable {
     @Override
     public String toString() {
         return "CheckUpdateRequest{" +
-                "appVersion='" + appVersion + '\'' +
-                ", fcmToken='" + fcmToken + '\'' +
-//                ", mobileNo='" + mobileNo + '\'' +
+                "fcmToken='" + fcmToken + '\'' +
+                ", lat='" + lat + '\'' +
+                ", lon='" + lon + '\'' +
+                ", oneSignalPushId='" + oneSignalPushId + '\'' +
+                ", hashKey='" + hashKey + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", deviceId='" + deviceId + '\'' +
                 ", requestType='" + requestType + '\'' +
                 ", requestLocale='" + requestLocale + '\'' +
-                ", deviceInfo=" + deviceInfo +
+                ", deviceInfo=" + deviceInfo.toString() +
                 '}';
     }
 }

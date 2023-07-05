@@ -26,7 +26,9 @@ import com.domaado.mobileapp.widget.myLog;
 
 public class GPSTracker extends Service implements LocationListener {
 
-    private final String TAG = "GPSTracker";
+    private static GPSTracker gpsTracker;
+
+    private final String TAG = GPSTracker.class.getSimpleName();
     private final Context mContext;
 
     // Flag for GPS status
@@ -55,6 +57,7 @@ public class GPSTracker extends Service implements LocationListener {
     public static final String LAT      = "GeoLocationLat";
     public static final String LON      = "GeoLocationLon";
     public static final String ACCURACY = "GeoLocationAccuracy";
+    public static final String ALTITUDE = "GeoLocationAltitude";
     public static final String PROVIDER = "GeoLocationProvider";
     public static final String UDT      = "GeoLocationTime";
 
@@ -63,13 +66,27 @@ public class GPSTracker extends Service implements LocationListener {
 
     //    private volatile Looper mMyLooper;
     private Handler mHandler = new Handler(Looper.getMainLooper());
-    private LocationListener myLocationListener;
+    //private LocationListener myLocationListener;
 
     public static String isType = "Unknown";
 
     private String bestProvider;
 
     private GPSTrackerListener gpsTrackerListener;
+
+    public static GPSTracker getInstance(Context context) {
+        if(gpsTracker==null) gpsTracker = new GPSTracker(context, "");
+        return gpsTracker;
+    }
+
+    public static GPSTracker getInstance(Context context, GPSTrackerListener listener) {
+        if(gpsTracker==null) gpsTracker = new GPSTracker(context, listener);
+        return gpsTracker;
+    }
+
+    public static boolean isRunning() {
+        return gpsTracker!=null;
+    }
 
     /**
      * 좌표를 리슨하지 않는...
@@ -89,7 +106,7 @@ public class GPSTracker extends Service implements LocationListener {
     public GPSTracker(Context context, GPSTrackerListener listener) {
         this.mContext = context;
 
-        this.myLocationListener = this;
+        //this.myLocationListener = this;
         this.gpsTrackerListener = listener;
 
         initGPSTracker();
@@ -98,8 +115,9 @@ public class GPSTracker extends Service implements LocationListener {
         if(nowLocation!=null) onLocationChanged(nowLocation);
     }
 
-    public void setGpsTrackerListener(GPSTrackerListener listener) {
+    public GPSTracker setGpsTrackerListener(GPSTrackerListener listener) {
         this.gpsTrackerListener = listener;
+        return this;
     }
 
     public Criteria criteria;
@@ -110,7 +128,7 @@ public class GPSTracker extends Service implements LocationListener {
 
         criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
+        criteria.setAltitudeRequired(true);
         criteria.setBearingRequired(false);
         criteria.setCostAllowed(true);
         criteria.setPowerRequirement(Criteria.POWER_LOW);
@@ -240,13 +258,16 @@ public class GPSTracker extends Service implements LocationListener {
                     }
 
                     try {
+                        if (bestProvider == null) {
+                            initGPSTracker();
+                        }
 
                         locationManager.requestLocationUpdates(bestProvider,
                                 MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, myLocationListener);
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, GPSTracker.this);
 
-                        myLog.d(TAG, "GPSTracker is start!");
-                    } catch(IllegalArgumentException e) {
+                        myLog.d(TAG, "*** GPSTracker is start!");
+                    } catch(Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -267,7 +288,7 @@ public class GPSTracker extends Service implements LocationListener {
     public void stopUsingGPS() {
         if (locationManager != null) {
             locationManager.removeUpdates(GPSTracker.this);
-
+            locationManager = null;
             myLog.d(TAG, "*** GPSTracker is stop!");
         }
     }
@@ -344,30 +365,63 @@ public class GPSTracker extends Service implements LocationListener {
         alertDialog.show();
     }
 
+    public Location loadLastLocation() {
+        String lat = Common.getSharedPreferencesString(LAT, mContext);
+        String lon = Common.getSharedPreferencesString(LON, mContext);
+        String acc = Common.getSharedPreferencesString(ACCURACY, mContext);
+        String alt = Common.getSharedPreferencesString(ALTITUDE, mContext);
+
+        Location fastLocation = new Location("stored");
+
+        if(!TextUtils.isEmpty(lat) && !TextUtils.isEmpty(lon)) {
+            try {
+                fastLocation.setLatitude(Double.parseDouble(lat));
+                fastLocation.setLongitude(Double.parseDouble(lon));
+                if(!TextUtils.isEmpty(acc)) fastLocation.setAccuracy(Float.parseFloat(acc));
+                if(!TextUtils.isEmpty(alt)) fastLocation.setAltitude(Double.parseDouble(alt));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            return null;
+        }
+
+        if(this.gpsTrackerListener!=null) this.gpsTrackerListener.onUpdateLocation(fastLocation);
+
+        return fastLocation;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
-        //myLog.d(TAG, "*** onLocationChanged: Location update!");
+//        myLog.d(TAG, "*** onLocationChanged: Location update!");
 
         if(this.gpsTrackerListener!=null) this.gpsTrackerListener.onUpdateLocation(location);
 
-        double lat = location.getLatitude();
-        double lon = location.getLongitude();
-        float acc = location.getAccuracy(); // 신뢰도!
-        String provider = location.getProvider();
-        long gettime = location.getTime();
+        // save
+        if(location!=null) {
+            double lat = location.getLatitude();
+            double lon = location.getLongitude();
+            float acc = location.getAccuracy(); // 신뢰도!
+            double alt = location.getAltitude(); // 고도!
+            String provider = location.getProvider();
+            long gettime = location.getTime();
 
-        //myLog.d(TAG, "*** onLocationChanged: lat:" + lat + ", lon:" + lon + ", acc:" + acc);
-        if (mContext != null) {
-            Common.saveSharedPreferences(LAT, false, String.valueOf(lat), mContext);
-            Common.saveSharedPreferences(LON, false, String.valueOf(lon), mContext);
+//            myLog.d(TAG, "*** onLocationChanged: lat:" + lat + ", lon:" + lon + ", acc:" + acc);
+            //myLog.d(TAG, "*** onLocationChanged: "+location.toString());
 
-            Common.saveSharedPreferences(ACCURACY, false, String.valueOf(acc), mContext);
-            Common.saveSharedPreferences(PROVIDER, false, provider, mContext);
-            Common.saveSharedPreferences(UDT, false, String.valueOf(gettime), mContext);
+            if (mContext != null) {
+                Common.saveSharedPreferencesString(LAT, String.valueOf(lat), mContext);
+                Common.saveSharedPreferencesString(LON, String.valueOf(lon), mContext);
 
-        } else {
-            myLog.d(TAG, "*** onLocationChanged: Context is null");
+                Common.saveSharedPreferencesString(ACCURACY, String.valueOf(acc), mContext);
+                Common.saveSharedPreferencesString(ALTITUDE, String.valueOf(alt), mContext);
+                Common.saveSharedPreferencesString(PROVIDER, provider, mContext);
+                Common.saveSharedPreferencesString(UDT, String.valueOf(gettime), mContext);
+
+            } else {
+                myLog.d(TAG, "*** onLocationChanged: Context is null");
+            }
         }
     }
 

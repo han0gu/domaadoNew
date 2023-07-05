@@ -2,6 +2,11 @@ package com.domaado.mobileapp.data;
 
 import android.text.TextUtils;
 
+import com.domaado.mobileapp.Common;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -11,134 +16,96 @@ import java.util.Locale;
 
 public class CheckUpdateResponse extends ResponseBase implements Serializable {
 
-    public String[] fields = { "recommender_yn", "member_yn", "update_yn", "driver_grade", "call_status", "response_id", "customer_lat", "customer_lon", "callcenter_tel" };
+    public String[] OBJECTS_KEY = { "data" };
+    public String[] fields = { "continue_user_yn", "key", "iv", "access_token", "member" };
 
-    String recommenderYn;
-    String memberYn;
-    String updateYn;
-
-    String driverGrade;
-
-    String callStatus;
-    String responseId;
-
-    String customerLat;
-    String customerLon;
-
-    String callcenterTel;
+    String continueUserYn;
+    String key;
+    String iv;
+    String accessToken;
+    MemberEntry memberEntry;
 
     public CheckUpdateResponse() {
-
+        memberEntry = new MemberEntry();
     }
 
-    public CheckUpdateResponse(String _requestId, String _responseYn, String _message, String _recommenderYn, String _memberYn, String _updateYn, String _driverGrade) {
-        this.requestId = _requestId;
-        this.responseYn = _responseYn;
-        this.message = _message;
-        this.recommenderYn = _recommenderYn;
-        this.memberYn = _memberYn;
-        this.updateYn = _updateYn;
-        this.driverGrade = _driverGrade;
+    public String getKey() {
+        return key;
     }
 
-    public String getRecommenderYn() {
-        if(!TextUtils.isEmpty(this.recommenderYn)) return this.recommenderYn.toUpperCase(Locale.getDefault());
-        else return recommenderYn;
+    public byte[] getKeyBytes() {
+        return Common.hexToByteArray(getKey());
     }
 
-    public void setRecommenderYn(String recommenderYn) {
-        this.recommenderYn = recommenderYn;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public String getMemberYn() {
-        if(!TextUtils.isEmpty(this.memberYn)) return this.memberYn.toUpperCase(Locale.getDefault());
-        else return memberYn;
+    public String getIv() {
+        return iv;
     }
 
-    public void setMemberYn(String memberYn) {
-        this.memberYn = memberYn;
+    public byte[] getIvBytes() {
+        return Common.hexToByteArray(getIv());
     }
 
-    public String getUpdateYn() {
-        return updateYn;
+    public void setIv(String iv) {
+        this.iv = iv;
     }
 
-    public void setUpdateYn(String updateYn) {
-        this.updateYn = updateYn;
+    public String getContinueUserYn() {
+        return continueUserYn;
     }
 
-    public String getCallStatus() {
-        return callStatus;
+    public void setContinueUserYn(String continueUserYn) {
+        this.continueUserYn = continueUserYn;
     }
 
-    public void setCallStatus(String callStatus) {
-        this.callStatus = callStatus;
+    public MemberEntry getMemberEntry() {
+        return memberEntry;
     }
 
-    public String getResponseId() {
-        return responseId;
+    public void setMemberEntry(MemberEntry memberEntry) {
+        this.memberEntry = memberEntry;
     }
 
-    public void setResponseId(String responseId) {
-        this.responseId = responseId;
+    public String getAccessToken() {
+        return accessToken;
     }
 
-    public String getDriverGrade() {
-        return driverGrade;
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
-    public void setDriverGrade(String driverGrade) {
-        this.driverGrade = driverGrade;
-    }
+    public void set(String key, Object value) {
+        if(fields[0].equalsIgnoreCase(key)) setContinueUserYn(Common.valueOf(value));
+        else if(fields[1].equalsIgnoreCase(key)) setKey(Common.valueOf(value));
+        else if(fields[2].equalsIgnoreCase(key)) setIv(Common.valueOf(value));
+        else if(fields[3].equalsIgnoreCase(key)) setAccessToken(Common.valueOf(value));
+        else if(fields[4].equalsIgnoreCase(key) && !TextUtils.isEmpty(Common.valueOf(value))) {
+            try {
+                JSONObject obj = new JSONObject(Common.valueOf(value));
+                MemberEntry memberEntry = new MemberEntry();
+                for(String field : memberEntry.fields) {
+                    if(obj.has(field)) memberEntry.set(field, obj.get(field));
+                }
 
-    public String getCustomerLat() {
-        return customerLat;
-    }
+                setMemberEntry(memberEntry);
 
-    public void setCustomerLat(String customerLat) {
-        this.customerLat = customerLat;
-    }
-
-    public String getCustomerLon() {
-        return customerLon;
-    }
-
-    public void setCustomerLon(String customerLon) {
-        this.customerLon = customerLon;
-    }
-
-    public String getCallcenterTel() {
-        return callcenterTel;
-    }
-
-    public void setCallcenterTel(String callcenterTel) {
-        this.callcenterTel = callcenterTel;
-    }
-
-    public void set(String key, String value) {
-        if(fields[0].equalsIgnoreCase(key)) setRecommenderYn(value);
-        else if(fields[1].equalsIgnoreCase(key)) setMemberYn(value);
-        else if(fields[2].equalsIgnoreCase(key)) setUpdateYn(value);
-        else if(fields[3].equalsIgnoreCase(key)) setDriverGrade(value);
-        else if(fields[4].equalsIgnoreCase(key)) setCallStatus(value);
-        else if(fields[5].equalsIgnoreCase(key)) setResponseId(value);
-        else if(fields[6].equalsIgnoreCase(key)) setCustomerLat(value);
-        else if(fields[7].equalsIgnoreCase(key)) setCustomerLon(value);
-        else if(fields[8].equalsIgnoreCase(key)) setCallcenterTel(value);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "CheckUpdateResponse{" +
-                "recommenderYn='" + recommenderYn + '\'' +
-                ", memberYn='" + memberYn + '\'' +
-                ", updateYn='" + updateYn + '\'' +
-                ", driverGrade='" + driverGrade + '\'' +
-                ", callStatus='" + callStatus + '\'' +
-                ", responseId='" + responseId + '\'' +
-                ", customerLat='" + customerLat + '\'' +
-                ", customerLon='" + customerLon + '\'' +
-                ", callCenterTel='" + callcenterTel + '\'' +
+                "continueUserYn='" + continueUserYn + '\'' +
+                ", key='" + key + '\'' +
+                ", iv='" + iv + '\'' +
+                ", accessToken='" + accessToken + '\'' +
+                ", memberEntry=" + memberEntry.toString() +
                 ", seq=" + seq +
                 ", requestId='" + requestId + '\'' +
                 ", responseYn='" + responseYn + '\'' +

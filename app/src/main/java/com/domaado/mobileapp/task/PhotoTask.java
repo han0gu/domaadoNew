@@ -227,7 +227,7 @@ public class PhotoTask extends AsyncTask<String, String, CarPhotoResponse> {
         try {
             JSONObject json = new JSONObject(data); //.getJSONObject("response");
 
-            for(String field : response.fields) {
+            for(String field : response.baseFields) {
                 if(json.has(field)) response.setBase(field, json.getString(field));
             }
 

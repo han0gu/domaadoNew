@@ -38,11 +38,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -55,11 +50,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.domaado.mobileapp.Common;
-
-import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.widget.AutoFitTextureView;
-import com.domaado.mobileapp.widget.myLog;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,6 +66,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.widget.AutoFitTextureView;
+import com.domaado.mobileapp.widget.myLog;
 
 
 @SuppressLint("NewApi")

@@ -12,6 +12,7 @@ import android.provider.Settings.SettingNotFoundException;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
+import com.domaado.mobileapp.App;
 import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.widget.myLog;
@@ -21,80 +22,6 @@ import java.util.HashMap;
 public class SecureNetworkUtil {
 	
 	private final static String TAG = "SecureNetworkUtil";
-
-	@SuppressLint("InlinedApi")
-	@SuppressWarnings("deprecation")
-	public static boolean isAirplaneMode(Context context) {
-
-		int result;
-		try {
-			if (Build.VERSION.SDK_INT < 17) {
-				result = Settings.System.getInt(context.getContentResolver(),
-						Settings.System.AIRPLANE_MODE_ON);
-			} else {
-				result = Settings.System.getInt(context.getContentResolver(),
-						Settings.Global.AIRPLANE_MODE_ON);
-			}
-
-			return result != 0;
-		} catch (SettingNotFoundException e) {
-			return false;
-		}
-	}
-
-	public static boolean isWifiMode(Context context) {
-
-		ConnectivityManager cm = (ConnectivityManager) context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-		NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		boolean isWifiConn = ni.isConnected();
-
-		return isWifiConn;
-	}
-
-	public static boolean isMobileMode(Context context) {
-
-		ConnectivityManager cm = (ConnectivityManager) context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-		NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-
-		boolean isMobileConn = ni.isConnected();
-
-		return isMobileConn;
-	}
-
-	public static boolean isRoaming(Context context) {
-
-		TelephonyManager telephony = (TelephonyManager) context
-				.getSystemService(Context.TELEPHONY_SERVICE);
-        return telephony.isNetworkRoaming() == true;
-
-    }
-
-	public static String getWifiMACAddress(Context context) {
-
-		WifiManager wifiManager = (WifiManager) context
-				.getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-		String macAddress = wifiInfo.getMacAddress();
-
-		return macAddress;
-	}
-
-	public static String getMobileNetworkMACAddress() {
-
-		String result = null;
-
-		return result;
-	}
-
-	public static boolean isDualUsim() {
-		boolean result = false;
-
-		return result;
-	}
 
 	/**
 	 * 
@@ -191,6 +118,43 @@ public class SecureNetworkUtil {
 
 	    return filtered.toString();
 	}
-	
-	
+
+	public static String getEncStringBase64(String value) throws Exception {
+
+		if(TextUtils.isEmpty(new String(App.getIvByte())) || TextUtils.isEmpty(new String(App.getKeyByte()))) {
+			myLog.e(TAG, "*** getEncStringBase64 - iv or key is null!");
+		}
+
+		String encrypted = null;
+		MCrypt mcrypt = new MCrypt(App.getIvByte(), App.getKeyByte());
+
+		if(!TextUtils.isEmpty(value))
+			encrypted = Common.getBase64encode(mcrypt.encrypt(value));
+
+		return encrypted;
+
+	}
+
+	public static String getDecStringBase64(String encString) {
+
+		MCrypt mcrypt = new MCrypt(App.getIvByte(), App.getKeyByte());
+		String decrypted = null;
+
+		try {
+
+//			myLog.e(TAG, "*** getDecStringBase64 - iv: "+new String(App.getIvByte()));
+//			myLog.e(TAG, "*** getDecStringBase64 - key: "+new String(App.getKeyByte()));
+
+//			encString = new String(Common.getBase64decode(encString));
+//			decrypted = new String(mcrypt.decrypt(encString));
+
+//			encString = new String(Common.getBase64decode(encString));
+			decrypted = new String(mcrypt.decrypt(Common.getBase64decode(encString)));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return decrypted;
+	}
 }

@@ -18,6 +18,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.text.TextUtils;
 
+import com.domaado.mobileapp.App;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.domaado.mobileapp.Common;
@@ -42,6 +44,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
     private int NOTIFICATION_ID = 542701;
 
+    public static final String FCM_DATA_DATA        = "data";
     public static final String FCM_DATA_RESPONSE_ID  = "response_id";
     public static final String FCM_DATA_TITLE        = "title";
     public static final String FCM_DATA_ACTION       = "action";
@@ -64,6 +67,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         myLog.i(TAG, "*** onMessageReceived");
 
         Map<String, String> data = remoteMessage.getData();
+
+        String mdata = data.get(FCM_DATA_DATA);
 
         String responseId = data.get(FCM_DATA_RESPONSE_ID);
         String action = data.get(FCM_DATA_ACTION);
@@ -94,9 +99,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // 이 메소드는 사실상 앱이 동작중일 때만 호출 되기 때문에 else를 탈 일이 없다.......개 삽질..
         String enableNotification = "1"; //Common.getSharedPreferencesString(SetupActivity.SETUP_STOP_NOTIFICATION, this);
 
+        QueryParams queryParams = new QueryParams(title, message, mdata, action, lat, lon, url);
+        App.setQueryParam(queryParams);
 
         if (Common.isRunning(this)) {
-            QueryParams queryParams = new QueryParams(title, message, responseId, action, lat, lon, url);
 
             if(Constant.PUSH_ACTION_REFRESH_LIST.equalsIgnoreCase(action)) {
                 actionBroadcast(Constant.REFRESH_FILTER, queryParams);
@@ -211,5 +217,45 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         LocalBroadcastManager localBroadcastManager = LocalBroadcastManager.getInstance(this);
         localBroadcastManager.sendBroadcast(intent);
+    }
+
+    public static void setTopicSubscribe(Context context, String topic) {
+        String key = "FCM_TOPIC";
+
+        final String lastTopic = Common.getSharedPreferencesString(key, context);
+        if(!TextUtils.isEmpty(lastTopic))  {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(lastTopic).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    if(task.getException()!=null)
+                        myLog.e(TAG, "*** unsubscribeFromTopic unsuccessful: "+ task.getException().getLocalizedMessage());
+                    else
+                        myLog.e(TAG, "*** unsubscribeFromTopic ERROR : "+ lastTopic);
+                } else {
+                    myLog.d(TAG, "*** unsubscribeFromTopic successful: "+ lastTopic);
+                }
+            });
+        }
+
+        if(!TextUtils.isEmpty(topic)) {
+
+            Common.saveSharedPreferencesString(key, topic, context);
+
+            FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            if (task.getException() != null)
+                                myLog.e(TAG, "*** setTopicSubscribe unsuccessful: " + task.getException().getLocalizedMessage());
+                            else
+                                myLog.e(TAG, "*** setTopicSubscribe ERROR : " + topic);
+                        } else {
+                            myLog.d(TAG, "*** setTopicSubscribe successful: " + topic);
+                        }
+
+//                        Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Common.removeSharedPreferences(key, context);
+
+        }
     }
 }

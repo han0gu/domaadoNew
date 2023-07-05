@@ -9,7 +9,7 @@
 		android:layout_height="match_parent"
 		android:id="@+id/container" >
 		
-        <com.domaado.mobileapp.widget.AutoFitTextureView
+        <kr.huno.myuniverse.widget.AutoFitTextureView
 	        android:id="@+id/textureView"
 	        android:layout_width="match_parent"
 	        android:layout_height="match_parent" />
@@ -31,13 +31,13 @@
         </me.mattak.aspect_ratio_layout.LinearLayout>
 
         <TextView
-            android:id="@+id/textView1"
+            android:id="@+id/camera_shot_guide_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:layout_marginRight="30dp"
             android:layout_marginTop="30dp"
-            android:text="@string/camera_shot_guide"
+            android:text="@string/camera_face_guide"
             android:textColor="@color/White" />
 
         <LinearLayout

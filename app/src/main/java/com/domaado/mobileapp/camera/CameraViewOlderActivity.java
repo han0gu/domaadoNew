@@ -24,17 +24,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.domaado.mobileapp.Common;
-
-import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.widget.ImageSurfaceView;
-import com.domaado.mobileapp.widget.myLog;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+
+import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.R;
+import com.domaado.mobileapp.widget.ImageSurfaceView;
+import com.domaado.mobileapp.widget.myLog;
 
 /**
  *
@@ -242,13 +241,13 @@ public class CameraViewOlderActivity extends AppCompatActivity implements OnClic
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				
-				Toast.makeText(CameraViewOlderActivity.this, "Captured image is empty", Toast.LENGTH_LONG).show();
+				Toast.makeText(CameraViewOlderActivity.this, "Captured image is empty", Toast.LENGTH_SHORT).show();
 				finish();
 			}
         	
 //            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 //            if(bitmap==null){
-//                Toast.makeText(CameraViewOlderActivity.this, "Captured image is empty", Toast.LENGTH_LONG).show();
+//                Toast.makeText(CameraViewOlderActivity.this, "Captured image is empty", Toast.LENGTH_SHORT).show();
 //                return;
 //            }
 //            resultImage = scaleDownBitmapImage(bitmap, boxWidth, boxHeight);

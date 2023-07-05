@@ -1,22 +1,27 @@
 package com.domaado.mobileapp.data;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import com.domaado.mobileapp.Common;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Created by jameshong on 2018. 5. 30..
  */
 
-public class PhotoEntry  implements Serializable {
-    public String[] fields = { "photo_idx", "photo_name", "photo_url", "photo_data" };
+public class PhotoEntry extends EntryBase implements Serializable {
+    public String[] fields = { "photo_idx", "photo_type", "photo_name", "photo_url", "photo_data", "user_idx", "photo_param" };
 
     String photoIdx;
+    String photoType;
     String photoName;
     String photoUrl;
     String photoData;
+    String userIdx;
+    String photoParam;
 
     public String getPhotoIdx() {
         return photoIdx;
@@ -24,6 +29,14 @@ public class PhotoEntry  implements Serializable {
 
     public void setPhotoIdx(String photoIdx) {
         this.photoIdx = photoIdx;
+    }
+
+    public String getPhotoType() {
+        return photoType;
+    }
+
+    public void setPhotoType(String photoType) {
+        this.photoType = photoType;
     }
 
     public String getPhotoName() {
@@ -46,12 +59,24 @@ public class PhotoEntry  implements Serializable {
         return photoData;
     }
 
+    public String getPhotoDataLog() {
+        if(!TextUtils.isEmpty(photoData) && photoData.length()>80) {
+            return photoData.substring(80);
+        } else {
+            return photoData;
+        }
+    }
+
     public void setPhotoData(String photoData) {
         this.photoData = photoData;
     }
 
     public void setPhotoData(Bitmap image) {
-        this.photoData = Common.getBase64encodeImage(image);
+        try {
+            this.photoData = Common.getBase64encodeImage(image);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Bitmap getPhotoBitmap() {
@@ -60,10 +85,67 @@ public class PhotoEntry  implements Serializable {
         return bitmap;
     }
 
-    public void set(String key, String value) {
-        if(fields[0].equals(key)) setPhotoIdx(value);
-        else if(fields[1].equals(key)) setPhotoName(value);
-        else if(fields[2].equals(key)) setPhotoUrl(value);
-        else if(fields[3].equals(key)) setPhotoData(value);
+    public String getUserIdx() {
+        return userIdx;
+    }
+
+    public void setUserIdx(String userIdx) {
+        this.userIdx = userIdx;
+    }
+
+    public String getPhotoParam() {
+        return photoParam;
+    }
+
+    public void setPhotoParam(String photoParam) {
+        this.photoParam = photoParam;
+    }
+
+    public HashMap<String, Object> getRequestParameterMap() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put(fields[0], getPhotoIdx());
+        map.put(fields[1], getPhotoType());
+        map.put(fields[2], getPhotoName());
+        map.put(fields[3], getPhotoUrl());
+        map.put(fields[4], getPhotoData());
+        map.put(fields[5], getUserIdx());
+        map.put(fields[6], getPhotoParam());
+
+        return map;
+    }
+
+    public void set(String key, Object value) {
+        if(fields[0].equalsIgnoreCase(key)) setPhotoIdx(String.valueOf(value));
+        else if(fields[1].equalsIgnoreCase(key)) setPhotoType(String.valueOf(value));
+        else if(fields[2].equalsIgnoreCase(key)) setPhotoName(String.valueOf(value));
+        else if(fields[3].equalsIgnoreCase(key)) setPhotoUrl(String.valueOf(value));
+        else if(fields[4].equalsIgnoreCase(key)) setPhotoData(String.valueOf(value));
+        else if(fields[5].equalsIgnoreCase(key)) setUserIdx(String.valueOf(value));
+        else if(fields[6].equalsIgnoreCase(key)) setPhotoParam(String.valueOf(value));
+    }
+
+    public Object get(String key) {
+        if(fields[0].equalsIgnoreCase(key)) return getPhotoIdx();
+        else if(fields[1].equalsIgnoreCase(key)) return getPhotoType();
+        else if(fields[2].equalsIgnoreCase(key)) return getPhotoName();
+        else if(fields[3].equalsIgnoreCase(key)) return getPhotoUrl();
+        else if(fields[4].equalsIgnoreCase(key)) return getPhotoData();
+        else if(fields[5].equalsIgnoreCase(key)) return getUserIdx();
+        else if(fields[6].equalsIgnoreCase(key)) return getPhotoParam();
+        else return null;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotoEntry{" +
+                "photoIdx='" + photoIdx + '\'' +
+                ", photoType='" + photoType + '\'' +
+                ", photoName='" + photoName + '\'' +
+                ", photoUrl='" + photoUrl + '\'' +
+                ", userIdx='" + userIdx + '\'' +
+                ", photoData='" + getPhotoDataLog() + '\'' +
+                ", photoParam='" + photoParam + '\'' +
+                '}';
     }
 }
