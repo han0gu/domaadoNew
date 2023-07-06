@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class UserProfileUpdateRequest extends RequestBase  implements Serializable {
 
     public String[] OBJECTS_KEY = { "data" };
-    public String[] fields = { "clientuser", "photo" };
+    public String[] fields = { "member", "photo" };
 
     MemberEntry memberEntry;
     PhotoEntry photoEntry;

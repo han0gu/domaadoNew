@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.os.Parcelable;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -56,6 +58,7 @@ public class ImagePickerActivity extends AppCompatActivity {
 
     public static final int REQUEST_IMAGE_CAPTURE = 0;
     public static final int REQUEST_GALLERY_IMAGE = 1;
+    public static final int REQUEST_SELECT_METHOD = 2;
 
     private boolean lockAspectRatio = false, setBitmapMaxWidthHeight = false;
     private int ASPECT_RATIO_X = 16, ASPECT_RATIO_Y = 9, bitmapMaxWidth = 1000, bitmapMaxHeight = 1000;
@@ -66,10 +69,18 @@ public class ImagePickerActivity extends AppCompatActivity {
 
     public ActivityResultLauncher<Intent> ActionImageCaptureResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
         if (result.getResultCode() == Activity.RESULT_OK) {
-            cropImage(getCacheImagePath(fileName));
+            Intent data = result.getData();
+
+            if(data!=null && data.getData()!=null) {
+                Uri imageUri = data.getData();
+                cropImage(imageUri);
+            } else {
+                cropImage(getCacheImagePath(fileName));
+            }
         } else {
             setResultCancelled();
         }
+
     });
 
     public interface PickerOptionListener {
@@ -81,7 +92,19 @@ public class ImagePickerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_image_picker);
+
+        try {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } catch (IllegalStateException ignore) {
+            ignore.printStackTrace();
+        }
+
+        WindowManager.LayoutParams lpWindow = getWindow().getAttributes();
+        lpWindow.dimAmount = 0.7f;
+        getWindow().setAttributes(lpWindow);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         Intent intent = getIntent();
         if (intent == null) {
@@ -99,61 +122,42 @@ public class ImagePickerActivity extends AppCompatActivity {
 
         cameraUtil = new CameraUtil(this);
 
-
-
         int requestCode = intent.getIntExtra(INTENT_IMAGE_PICKER_OPTION, -1);
-        if (requestCode == REQUEST_IMAGE_CAPTURE) {
-            takeCameraImage();
-        } else {
-            chooseImageFromGallery();
+        switch(requestCode) {
+            case REQUEST_SELECT_METHOD:
+                selectPickerMethod();
+                break;
+            case REQUEST_IMAGE_CAPTURE:
+                takeCameraImage();
+                break;
+            case REQUEST_GALLERY_IMAGE:
+            default:
+                chooseImageFromGallery();
+                break;
         }
+//        if (requestCode == REQUEST_IMAGE_CAPTURE) {
+//            takeCameraImage();
+//        } else {
+//            chooseImageFromGallery();
+//        }
     }
 
-//    private static List<Intent> addIntentsToList(Context context, List<Intent> list, Intent intent) {
-//        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent, 0);
-//        for (ResolveInfo resolveInfo : resInfo) {
-//            String packageName = resolveInfo.activityInfo.packageName;
-//            Intent targetedIntent = new Intent(intent);
-//            targetedIntent.setPackage(packageName);
-//            list.add(targetedIntent);
-//            myLog.d(TAG, "*** Intent: " + intent.getAction() + " package: " + packageName);
-//        }
-//        return list;
-//    }
-
-//    public static Intent getPickImageIntent(Context context) {
-//        Intent chooserIntent = null;
-//
-//        List<Intent> intentList = new ArrayList<>();
-//
-//        Intent pickIntent = new Intent(Intent.ACTION_PICK,
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        takePhotoIntent.putExtra("return-data", true);
-//
-//        fileName = System.currentTimeMillis() + ".jpg";
-////        photoURI = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", getTempFile(context));
-//
-//        //takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getTempFile(context)));
-//        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
-//        takePhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//
-//        intentList = addIntentsToList(context, intentList, pickIntent);
-//        intentList = addIntentsToList(context, intentList, takePhotoIntent);
-//
-//        if (intentList.size() > 0) {
-//            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1),
-//                    context.getString(R.string.pick_image_intent_text));
-//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
-//        }
-//
-//        return chooserIntent;
-//    }
+    private List<Intent> addIntentsToList(Context context, List<Intent> list, Intent intent) {
+        List<ResolveInfo> resInfo = context.getPackageManager().queryIntentActivities(intent, 0);
+        for (ResolveInfo resolveInfo : resInfo) {
+            String packageName = resolveInfo.activityInfo.packageName;
+            Intent targetedIntent = new Intent(intent);
+            targetedIntent.setPackage(packageName);
+            list.add(targetedIntent);
+            myLog.d(TAG, "*** Intent: " + intent.getAction() + " package: " + packageName);
+        }
+        return list;
+    }
 
     public static void showImagePickerOptions(Context context, PickerOptionListener listener) {
         // setup the alert builder
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(context.getString(R.string.lbl_set_profile_photo));
+        builder.setTitle(context.getString(R.string.pick_image_intent_text));
 
         // add a list
         String[] animals = {context.getString(R.string.lbl_take_camera_picture), context.getString(R.string.lbl_choose_from_gallery)};
@@ -173,6 +177,55 @@ public class ImagePickerActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    public Intent getPickImageIntent() {
+        Intent chooserIntent = null;
+
+        List<Intent> intentList = new ArrayList<>();
+
+        Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        takePhotoIntent.putExtra("return-data", true);
+
+        fileName = System.currentTimeMillis() + ".jpg";
+
+        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
+        takePhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        intentList = addIntentsToList(this, intentList, pickIntent);
+        intentList = addIntentsToList(this, intentList, takePhotoIntent);
+
+        if (intentList.size() > 0) {
+            chooserIntent = Intent.createChooser(intentList.remove(intentList.size() - 1), getResources().getString(R.string.pick_image_intent_text));
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Parcelable[]{}));
+        }
+
+        return chooserIntent;
+    }
+
+    public void selectPickerMethod() {
+
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if (report.areAllPermissionsGranted()) {
+                            Intent takePictureIntent = getPickImageIntent();
+                            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+//                                ActionImageCaptureResult.launch(takePictureIntent);
+                                startActivityForResult(takePictureIntent, REQUEST_SELECT_METHOD);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                        token.continuePermissionRequest();
+                    }
+                }).check();
+    }
+
     private void takeCameraImage() {
 
         Dexter.withActivity(this)
@@ -184,15 +237,15 @@ public class ImagePickerActivity extends AppCompatActivity {
 //                            runOnUiThread(new Runnable() {
 //                                @Override
 //                                public void run() {
-                                    fileName = System.currentTimeMillis() + ".jpg";
-                                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
-                                    takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            fileName = System.currentTimeMillis() + ".jpg";
+                            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, getCacheImagePath(fileName));
+                            takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 //                                      ActionImageCaptureResult.launch(takePictureIntent);
-                                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                                    }
+                                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                            }
 //                                }
 //                            });
                         }
@@ -246,6 +299,18 @@ public class ImagePickerActivity extends AppCompatActivity {
                     setResultCancelled();
                 }
                 break;
+            case REQUEST_SELECT_METHOD:
+                if (resultCode == RESULT_OK) {
+                    if(data!=null && data.getData()!=null) {
+                        Uri imageUri = data.getData();
+                        cropImage(imageUri);
+                    } else {
+                        cropImage(getCacheImagePath(fileName));
+                    }
+                } else {
+                    setResultCancelled();
+                }
+                break;
             case UCrop.REQUEST_CROP:
                 if (resultCode == RESULT_OK) {
                     handleUCropResult(data);
@@ -267,44 +332,15 @@ public class ImagePickerActivity extends AppCompatActivity {
 
         String filename = queryName(getContentResolver(), sourceUri);
 
-        Uri destinationUri = Uri.fromFile(new File(getCacheDir(), filename));
-        UCrop.Options options = new UCrop.Options();
-        options.setCompressionQuality(IMAGE_COMPRESSION);
-
-        // applying UI theme
-        options.setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        options.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-
-        if (lockAspectRatio)
-            options.withAspectRatio(ASPECT_RATIO_X, ASPECT_RATIO_Y);
-
-        if (setBitmapMaxWidthHeight)
-            options.withMaxResultSize(bitmapMaxWidth, bitmapMaxHeight);
-
-        UCrop.of(sourceUri, destinationUri)
-                .withOptions(options)
-                .start(this);
-    }
-
-    private void _cropImage(Uri _sourceUri) {
-
-        // content://media/external/images/media/14988
-        myLog.e(TAG, "*** cropImage: "+_sourceUri.toString());
-
-        String filename = queryName(getContentResolver(), _sourceUri); //_sourceUri.getLastPathSegment();
-
-        Uri sourceUri = Common.convertLocalFile(this, _sourceUri);
-
-        myLog.e(TAG, "*** converted Image: "+sourceUri.toString());
+        myLog.e(TAG, "*** cropImage: "+filename);
 
         Uri destinationUri = Uri.fromFile(new File(getCacheDir(), filename));
         UCrop.Options options = new UCrop.Options();
         options.setCompressionQuality(IMAGE_COMPRESSION);
 
         // applying UI theme
-        options.setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        options.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-//        options.setActiveWidgetColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        options.setToolbarColor(ContextCompat.getColor(this, R.color.colorWhite));
+        options.setStatusBarColor(ContextCompat.getColor(this, R.color.colorWhite));
 
         if (lockAspectRatio)
             options.withAspectRatio(ASPECT_RATIO_X, ASPECT_RATIO_Y);
@@ -318,6 +354,8 @@ public class ImagePickerActivity extends AppCompatActivity {
     }
 
     private void handleUCropResult(Intent data) {
+        myLog.e(TAG, "*** handleUCropResult");
+
         if (data == null) {
             setResultCancelled();
             return;
@@ -327,6 +365,8 @@ public class ImagePickerActivity extends AppCompatActivity {
     }
 
     private void setResultOk(Uri imagePath) {
+        myLog.e(TAG, "*** setResultOk");
+
         Intent intent = new Intent();
         intent.putExtra("path", imagePath);
         setResult(Activity.RESULT_OK, intent);
@@ -334,6 +374,8 @@ public class ImagePickerActivity extends AppCompatActivity {
     }
 
     private void setResultCancelled() {
+        myLog.e(TAG, "*** setResultCancelled");
+
         Intent intent = new Intent();
         setResult(Activity.RESULT_CANCELED, intent);
         finish();
@@ -345,11 +387,6 @@ public class ImagePickerActivity extends AppCompatActivity {
         myLog.d(TAG, "*** getCacheImagePath: "+ cameraUtil.FILE_PROVIDER_NAME);
 
         return uri;
-
-//        File path = new File(getExternalCacheDir(), "camera");
-//        if (!path.exists()) path.mkdirs();
-//        File image = new File(path, fileName);
-//        return getUriForFile(ImagePickerActivity.this, getPackageName() + ".provider", image);
     }
 
     private static String queryName(ContentResolver resolver, Uri uri) {

@@ -15,6 +15,7 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,66 +33,19 @@ public class BottomSelectDialog extends Dialog  {
     private String TAG = BottomSelectDialog.class.getSimpleName();
     private Context context;
 
-    public static class BottomSetupData {
-        int title;
-        int icon;
-        int text;
-        int confirm_btn;
-        int cancel_btn;
-
-        public int getTitle() {
-            return title;
-        }
-
-        public void setTitle(int title) {
-            this.title = title;
-        }
-
-        public int getIcon() {
-            return icon;
-        }
-
-        public void setIcon(int icon) {
-            this.icon = icon;
-        }
-
-        public int getText() {
-            return text;
-        }
-
-        public void setText(int text) {
-            this.text = text;
-        }
-
-        public int getConfirm_btn() {
-            return confirm_btn;
-        }
-
-        public void setConfirm_btn(int confirm_btn) {
-            this.confirm_btn = confirm_btn;
-        }
-
-        public int getCancel_btn() {
-            return cancel_btn;
-        }
-
-        public void setCancel_btn(int cancel_btn) {
-            this.cancel_btn = cancel_btn;
-        }
-    }
-
     public interface BottomSetupDialogListener {
         void onClose();
-        void onConfirm();
+        void onSelectCamera();
+        void onSelectGallery();
     }
 
-    private BottomSetupData bottomSetupData;
+    private BottomSelectData bottomSelectData;
     private BottomSetupDialogListener bottomSetupDialogListener;
 
-    public BottomSelectDialog(@NonNull Context context, BottomSetupData bottomSetupData) {
+    public BottomSelectDialog(@NonNull Context context, BottomSelectData bottomSelectData) {
         super(context);
         this.context = context;
-        this.bottomSetupData = bottomSetupData;
+        this.bottomSelectData = bottomSelectData;
     }
 
     @Override
@@ -115,31 +69,42 @@ public class BottomSelectDialog extends Dialog  {
 
     private void setUI() {
 
-        TextView bottom_setup_message_ti = findViewById(R.id.bottom_setup_message_ti);
-        ImageView bottom_setup_message_icon = findViewById(R.id.bottom_setup_message_icon);
-        TextView bottom_setup_message = findViewById(R.id.bottom_setup_message);
-        Button bottom_setup_confirm_btn = findViewById(R.id.bottom_setup_confirm_btn);
-        Button bottom_setup_close_btn = findViewById(R.id.bottom_setup_close_btn);
+        ImageView bottom_select_close = findViewById(R.id.bottom_select_close);
 
-        if(context!=null && bottomSetupData!=null) {
-            bottom_setup_message_ti.setText(context.getResources().getString(bottomSetupData.title));
-            bottom_setup_message_icon.setImageResource(bottomSetupData.icon);
-            bottom_setup_message.setText(context.getResources().getString(bottomSetupData.text));
+        LinearLayout bottom_select_camera = findViewById(R.id.bottom_select_camera);
+        LinearLayout bottom_select_gallery = findViewById(R.id.bottom_select_gallery);
 
-            bottom_setup_confirm_btn.setText(context.getResources().getString(bottomSetupData.confirm_btn));
-            bottom_setup_close_btn.setText(context.getResources().getString(bottomSetupData.cancel_btn));
+        ImageView bottom_select_camera_icon = findViewById(R.id.bottom_select_camera_icon);
+        TextView bottom_select_camera_ti = findViewById(R.id.bottom_select_camera_ti);
+
+        ImageView bottom_select_gallery_icon = findViewById(R.id.bottom_select_gallery_icon);
+        TextView bottom_select_gallery_ti = findViewById(R.id.bottom_select_gallery_ti);
+
+        if(context!=null && bottomSelectData!=null) {
+            bottom_select_camera_icon.setImageResource(bottomSelectData.cameraIcon);
+            bottom_select_camera_ti.setText(context.getResources().getString(bottomSelectData.cameraTi));
+
+            bottom_select_gallery_icon.setImageResource(bottomSelectData.galleryIcon);
+            bottom_select_gallery_ti.setText(context.getResources().getString(bottomSelectData.galleryTi));
         }
 
-        bottom_setup_close_btn.setOnClickListener(v -> {
+        bottom_select_close.setOnClickListener(v -> {
             if(bottomSetupDialogListener!=null) {
                 bottomSetupDialogListener.onClose();
                 dismiss();
             }
         });
 
-        bottom_setup_confirm_btn.setOnClickListener(v -> {
+        bottom_select_camera.setOnClickListener(v -> {
             if(bottomSetupDialogListener!=null) {
-                bottomSetupDialogListener.onConfirm();
+                bottomSetupDialogListener.onSelectCamera();
+                dismiss();
+            }
+        });
+
+        bottom_select_gallery.setOnClickListener(v -> {
+            if(bottomSetupDialogListener!=null) {
+                bottomSetupDialogListener.onSelectGallery();
                 dismiss();
             }
         });
@@ -148,7 +113,7 @@ public class BottomSelectDialog extends Dialog  {
             dismiss();
         });
 
-        showAnimation(findViewById(R.id.bottom_setup_container));
+        showAnimation(findViewById(R.id.bottom_select_container));
     }
 
     public void build(BottomSetupDialogListener listener) {
@@ -231,7 +196,7 @@ public class BottomSelectDialog extends Dialog  {
 
         if(bottomSetupDialogListener!=null) bottomSetupDialogListener.onClose();
 
-        hideAnimation(findViewById(R.id.bottom_setup_container), new Handler(msg -> {
+        hideAnimation(findViewById(R.id.bottom_select_container), new Handler(msg -> {
             super.dismiss();
             return true;
         }));

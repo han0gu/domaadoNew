@@ -298,7 +298,11 @@
         <!-- Image Picker activity -->
         <activity
             android:name=".camera.ImagePickerActivity"
-            android:theme="@style/AppThemeNoActionBar" />
+            android:exported="false"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.AppCompat.TranslucentNew" />
 
         <!-- uCrop cropping activity -->
         <activity

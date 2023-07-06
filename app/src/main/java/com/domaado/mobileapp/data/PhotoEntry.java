@@ -1,6 +1,7 @@
 package com.domaado.mobileapp.data;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.domaado.mobileapp.Common;
@@ -13,7 +14,7 @@ import java.util.HashMap;
  */
 
 public class PhotoEntry extends EntryBase implements Serializable {
-    public String[] fields = { "photo_idx", "photo_type", "photo_name", "photo_url", "photo_data", "user_idx", "photo_param" };
+    public String[] fields = { "seq", "type", "name", "url", "data", "user_seq", "params" };
 
     String photoIdx;
     String photoType;
@@ -22,6 +23,8 @@ public class PhotoEntry extends EntryBase implements Serializable {
     String photoData;
     String userIdx;
     String photoParam;
+
+    Uri photoUri;
 
     public String getPhotoIdx() {
         return photoIdx;
@@ -61,7 +64,7 @@ public class PhotoEntry extends EntryBase implements Serializable {
 
     public String getPhotoDataLog() {
         if(!TextUtils.isEmpty(photoData) && photoData.length()>80) {
-            return photoData.substring(80);
+            return "data exists."; //photoData.substring(80);
         } else {
             return photoData;
         }
@@ -101,6 +104,14 @@ public class PhotoEntry extends EntryBase implements Serializable {
         this.photoParam = photoParam;
     }
 
+    public Uri getPhotoUri() {
+        return photoUri;
+    }
+
+    public void setPhotoUri(Uri photoUri) {
+        this.photoUri = photoUri;
+    }
+
     public HashMap<String, Object> getRequestParameterMap() {
         HashMap<String, Object> map = new HashMap<>();
 
@@ -109,6 +120,19 @@ public class PhotoEntry extends EntryBase implements Serializable {
         map.put(fields[2], getPhotoName());
         map.put(fields[3], getPhotoUrl());
         map.put(fields[4], getPhotoData());
+        map.put(fields[5], getUserIdx());
+        map.put(fields[6], getPhotoParam());
+
+        return map;
+    }
+
+    public HashMap<String, Object> getRequestParameterMapParams() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put(fields[0], getPhotoIdx());
+        map.put(fields[1], getPhotoType());
+        map.put(fields[2], getPhotoName());
+        map.put(fields[3], getPhotoUrl());
         map.put(fields[5], getUserIdx());
         map.put(fields[6], getPhotoParam());
 

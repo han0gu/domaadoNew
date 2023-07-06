@@ -17,7 +17,7 @@ import java.util.Locale;
 public class CheckUpdateResponse extends ResponseBase implements Serializable {
 
     public String[] OBJECTS_KEY = { "data" };
-    public String[] fields = { "continue_user_yn", "key", "iv", "access_token", "member" };
+    public String[] fields = { "user_yn", "key", "iv", "access_token", "member" };
 
     String continueUserYn;
     String key;

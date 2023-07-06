@@ -13,7 +13,7 @@ import java.util.HashMap;
  */
 public class MemberEntry extends EntryBase implements Serializable {
 
-    public String[] fields = { "user_seq", "usr_nick_name", "email", "mobile_no", "user_yn", "user_profile_img", "user_type_nm", "country_code", "topic" };
+    public String[] fields = { "seq", "usr_nick_name", "email", "mobile_no", "user_yn", "user_profile_img", "user_type_nm", "country_code", "topic" };
 
     String userSeq;
     String usrNickName;

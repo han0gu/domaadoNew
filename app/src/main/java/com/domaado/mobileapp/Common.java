@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import android.content.pm.Signature;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -35,6 +37,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
@@ -2794,6 +2797,36 @@ public class Common {
 		} catch (IOException e) {
 			myLog.e(TAG, "*** saveImageBitmap: " + e.getLocalizedMessage());
 			e.printStackTrace();
+		}
+	}
+
+//	public static String getPathFromUri(Context context, Uri uri){
+//		try {
+//			Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+//			cursor.moveToNext();
+//			@SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex("_data"));
+//			cursor.close();
+//			return path;
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//			myLog.e(TAG, "*** getPathFromUri: "+e.getMessage());
+//
+//			return uri.toString();
+//		}
+//	}
+
+	public static String getPathFromUri(ContentResolver resolver, Uri uri) {
+		if(uri!=null) {
+			Cursor returnCursor =
+					resolver.query(uri, null, null, null, null);
+			assert returnCursor != null;
+			int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+			returnCursor.moveToFirst();
+			String name = returnCursor.getString(nameIndex);
+			returnCursor.close();
+			return name;
+		} else {
+			return "unknown";
 		}
 	}
 

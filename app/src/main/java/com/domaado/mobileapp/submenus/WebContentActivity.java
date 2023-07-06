@@ -46,16 +46,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.domaado.mobileapp.camera.BottomSelectData;
 import com.domaado.mobileapp.camera.BottomSelectDialog;
 import com.domaado.mobileapp.camera.CameraUtil;
 import com.domaado.mobileapp.camera.ImagePickerActivity;
 import com.domaado.mobileapp.data.CheckUpdateRequest;
 import com.domaado.mobileapp.data.MemberEntry;
 import com.domaado.mobileapp.data.PhotoEntry;
+import com.domaado.mobileapp.data.PhotoResponse;
 import com.domaado.mobileapp.data.UserProfileResponse;
 import com.domaado.mobileapp.data.UserProfileUpdateRequest;
 import com.domaado.mobileapp.data.UserProfileUpdateResponse;
 import com.domaado.mobileapp.network.UrlManager;
+import com.domaado.mobileapp.task.PhotoUploadTask;
 import com.domaado.mobileapp.task.UserProfileUpdateTask;
 import com.domaado.mobileapp.widget.ImagePicker;
 import com.google.android.gms.common.ConnectionResult;
@@ -180,6 +183,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             } else {
                 myLog.d(TAG, "*** data is null!");
             }
+        } else {
+            myLog.e(TAG, "*** CameraUtilResult CANCELLED! - "+result.getResultCode());
         }
     });
 
@@ -225,6 +230,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 //        mTimer = new Timer();
 
         checkQueryParams();
+
+        myLog.e(TAG, "*** onCreate!");
     }
 
 
@@ -609,7 +616,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         gpsTracker = new GPSTracker(this, new GPSTrackerListener() {
             @Override
             public void onUpdateLocation(Location location) {
-                myLog.d(TAG, "*** initPosition GPSTracker Location: "+location.toString());
+                //myLog.d(TAG, "*** initPosition GPSTracker Location: "+location.toString());
                 App.setCurrentLocation(location);
 
                 updateLocation(location);
@@ -1054,7 +1061,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 uploadData.url = uploadUrl;
                 uploadData.params = dataVal;
 
-                selectCaptureMedia();
+//                selectCaptureMedia();
+                updateProfileImage(ImagePickerActivity.REQUEST_SELECT_METHOD);
             }
 
             @Override
@@ -1591,7 +1599,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                                 photoEntry.setPhotoUrl(uploadData.url);
                                 photoEntry.setPhotoParam(uploadData.params);
 
-                                sendProfileData(App.getMemberEntry(), photoEntry);
+//                                sendProfileData(App.getMemberEntry(), photoEntry);
+                                uploadPhoto(photoEntry);
                             } else {
                                 Toast.makeText(this, "UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
                             }
@@ -1618,11 +1627,14 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
                     PhotoEntry photoEntry = new PhotoEntry();
                     photoEntry.setPhotoData(bitmap);
+                    photoEntry.setPhotoType(Common.getMimeType(uri.toString()));
+                    photoEntry.setPhotoUri(uri);
 
                     photoEntry.setPhotoUrl(uploadData.url);
                     photoEntry.setPhotoParam(uploadData.params);
 
-                    sendProfileData(App.getMemberEntry(), photoEntry);
+//                    sendProfileData(App.getMemberEntry(), photoEntry);
+                    uploadPhoto(photoEntry);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1630,6 +1642,63 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void uploadPhoto(PhotoEntry photoEntry) {
+        PhotoUploadTask photoUploadTask = new PhotoUploadTask(this, photoEntry, true, new Handler(msg -> {
+
+            PhotoResponse response = (PhotoResponse) msg.obj;
+
+            switch(msg.what) {
+                case Constant.RESPONSE_SUCCESS: {
+                    resultUploadPhoto(response);
+                    break;
+                }
+                case Constant.RESPONSE_FAILURE: {
+                    String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_json_data_error);
+                    // alertMessage =
+                    Common.alertMessage(WebContentActivity.this,
+                            getResources().getString(R.string.app_name),
+                            message,
+                            getResources().getString(R.string.btn_ok),
+                            new Handler(msg2 -> {
+                                return true;
+                            }));
+                    break;
+                }
+                case Constant.RESPONSE_TIMEOUT: {
+                    String message = response != null && !TextUtils.isEmpty(response.getMessage()) ? response.getMessage() : getResources().getString(R.string.server_response_error);
+                    // alertMessage =
+                    Common.alertMessage(WebContentActivity.this,
+                            getResources().getString(R.string.app_name),
+                            message,
+                            getResources().getString(R.string.btn_retry),
+                            getResources().getString(R.string.btn_ok),
+                            new Handler(msg2 -> {
+                                switch(msg2.what) {
+                                    case Constant.ALERTDIALOG_RESULT_YES:
+                                        uploadPhoto(photoEntry);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                return true;
+                            }));
+                    break;
+                }
+            }
+
+            return true;
+        }));
+        if(!TextUtils.isEmpty(photoEntry.getPhotoUrl())) {
+            photoUploadTask.execute(photoEntry.getPhotoUrl(), "", Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+        } else {
+            photoUploadTask.execute(Constant.API_URL[myLog.debugMode ? 1 : 0], UrlManager.getPhotoUploadAPI(this), Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+        }
+    }
+
+    private void resultUploadPhoto(PhotoResponse response) {
+
     }
 
     private void sendProfileData(final MemberEntry memberEntry, final PhotoEntry photoEntry) {
@@ -1683,7 +1752,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             return true;
         }));
 
-        userProfileUpdateTask.execute(Constant.SITE_URL[myLog.debugMode?1:0], UrlManager.getPhotoProfileUpdateAPI(this));
+        userProfileUpdateTask.execute(Constant.API_URL[myLog.debugMode?1:0], UrlManager.getProfileUpdateAPI(this));
     }
 
     private void parseResponse(UserProfileUpdateResponse response) {
@@ -1695,19 +1764,41 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
      */
     private void selectCaptureMedia() {
 
-//        updateProfileImage(ImagePickerActivity.REQUEST_IMAGE_CAPTURE);
+        BottomSelectData bottomSelectData = new BottomSelectData();
+        bottomSelectData.setCameraIcon(R.drawable.icon_camera);
+        bottomSelectData.setCameraTi(R.string.lbl_take_camera_picture);
+        bottomSelectData.setGalleryIcon(R.drawable.icon_gallery);
+        bottomSelectData.setGalleryTi(R.string.lbl_choose_from_gallery);
 
-        ImagePickerActivity.showImagePickerOptions(this, new ImagePickerActivity.PickerOptionListener() {
+        BottomSelectDialog bottomSelectDialog = new BottomSelectDialog(this, bottomSelectData);
+        bottomSelectDialog.build(new BottomSelectDialog.BottomSetupDialogListener() {
             @Override
-            public void onTakeCameraSelected() {
+            public void onClose() {
+
+            }
+
+            @Override
+            public void onSelectCamera() {
                 updateProfileImage(ImagePickerActivity.REQUEST_IMAGE_CAPTURE);
             }
 
             @Override
-            public void onChooseGallerySelected() {
+            public void onSelectGallery() {
                 updateProfileImage(ImagePickerActivity.REQUEST_GALLERY_IMAGE);
             }
         });
+
+//        ImagePickerActivity.showImagePickerOptions(this, new ImagePickerActivity.PickerOptionListener() {
+//            @Override
+//            public void onTakeCameraSelected() {
+//                updateProfileImage(ImagePickerActivity.REQUEST_IMAGE_CAPTURE);
+//            }
+//
+//            @Override
+//            public void onChooseGallerySelected() {
+//                updateProfileImage(ImagePickerActivity.REQUEST_GALLERY_IMAGE);
+//            }
+//        });
 
     }
 }

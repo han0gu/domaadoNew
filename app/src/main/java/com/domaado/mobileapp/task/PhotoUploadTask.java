@@ -14,71 +14,62 @@ import android.widget.TextView;
 import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.R;
-import com.domaado.mobileapp.data.PhotoRequest;
+import com.domaado.mobileapp.data.PhotoEntry;
 import com.domaado.mobileapp.data.PhotoResponse;
-import com.domaado.mobileapp.data.ResponseBase;
 import com.domaado.mobileapp.network.HttpRequestor;
 import com.domaado.mobileapp.widget.CustomAlertDialog;
-import com.domaado.mobileapp.widget.JsonUtils;
 import com.domaado.mobileapp.widget.myLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.concurrent.TimeoutException;
+import java.util.Map;
 
 /**
- * Created by jameshong on 2018. 6. 12..
- *
- * 기사가 서버로 전송한 사진을 가져온다.
- *
+ * 파일 멀티파트 업로드!
  */
+public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
 
-public class PhotoTask extends AsyncTask<String, String, PhotoResponse> {
-
-    private String TAG = PhotoTask.class.getSimpleName();
+    private String TAG = PhotoUploadTask.class.getSimpleName();
 
     private Activity mActivity;
     private Handler resultHandler;
 
-    private JSONObject requestBody;
-
     private boolean isShowProgress = true;
     private ProgressDialog progressDialog = null;
     private Handler timeoutHandler = new Handler();
-    CustomAlertDialog mesgbox;
+    private CustomAlertDialog mesgbox;
+
+    private PhotoEntry photoEntry;
 
     private Runnable timeoutCheckRunnable = new Runnable() {
         @Override
         public void run() {
-            mesgbox = Common.alertMessage(mActivity, mActivity.getResources().getString(R.string.app_name), mActivity.getResources().getString(R.string.server_response_error), new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    super.handleMessage(msg);
+            mesgbox = Common.alertMessage(mActivity, mActivity.getResources().getString(R.string.app_name), mActivity.getResources().getString(R.string.server_response_error), new Handler(msg -> {
 
-                    if (progressDialog != null) {
-                        progressDialog.dismiss();
-                    }
-
-                    if(timeoutHandler != null) {
-                        timeoutHandler.removeCallbacks(null);
-                    }
-                    mesgbox = null;
-
-                    if(resultHandler!=null) {
-                        msg.what = Constant.RESPONSE_TIMEOUT;
-
-                        resultHandler.sendMessage(msg);
-                    }
+                if (progressDialog != null) {
+                    progressDialog.dismiss();
                 }
-            });
+
+                if(timeoutHandler != null) {
+                    timeoutHandler.removeCallbacks(null);
+                }
+                mesgbox = null;
+
+                if(resultHandler!=null) {
+                    msg.what = Constant.RESPONSE_TIMEOUT;
+
+                    resultHandler.sendMessage(msg);
+                }
+                return true;
+            }));
 
             if (mesgbox != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -90,13 +81,11 @@ public class PhotoTask extends AsyncTask<String, String, PhotoResponse> {
         }
     };
 
-    public PhotoTask(Activity act, PhotoRequest photoRequest, boolean showProgress, Handler handler) {
+    public PhotoUploadTask(Activity act, PhotoEntry photoEntry, boolean showProgress, Handler handler) {
         this.mActivity = act;
         this.isShowProgress = showProgress;
         this.resultHandler = handler;
-
-        HashMap<String, Object> requestBodyMap =  photoRequest.getRequestParameterMap();
-        requestBody = JsonUtils.mapToJson(requestBodyMap);
+        this.photoEntry = photoEntry;
 
         //myLog.d(TAG, "*** body: "+requestBody);
     }
@@ -128,20 +117,35 @@ public class PhotoTask extends AsyncTask<String, String, PhotoResponse> {
         StringBuffer value = new StringBuffer("");
         String host = param.length > 0 ? param[0] : "";
         String path = param.length > 1 ? param[1] : "";
-        String body = requestBody != null ? requestBody.toString() : "";
+        String filePath = param.length > 2 ? param[2] : "";
 
         myLog.d(TAG, "*** URL:"+host+path);
-        myLog.d(TAG, "*** body(\n"+body+")");
+        myLog.d(TAG, "*** photoEntry: "+photoEntry.toString());
 
-        if(TextUtils.isEmpty(host) || TextUtils.isEmpty(path)) return null;
+        if(TextUtils.isEmpty(host) || TextUtils.isEmpty(filePath)) {
+            myLog.e(TAG, "*** REQUIRED Parameters (host, filepath)!!");
+            return null;
+        }
 
         try {
             String URLstr = host + path;
             URL mURL = new URL(URLstr);
             HttpRequestor httpRequestor = new HttpRequestor(mURL, Constant.REUEST_TIMEOUT);
 
+            for (Map.Entry<String, Object> entry : photoEntry.getRequestParameterMapParams().entrySet()) {
+                if(entry.getValue() instanceof String) {
+                    httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
+                } else if(entry.getValue() instanceof Integer) {
+                    httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
+                }
+            }
+
+            String photoName = !TextUtils.isEmpty(photoEntry.getPhotoName()) ? photoEntry.getPhotoName() : "photo_name";
+            //String filepath = Common.getPathFromUri(mActivity.getContentResolver(), photoEntry.getPhotoUri());
+            httpRequestor.addFile(photoName, new File(filePath));
+
             InputStream inputStream = null;
-            inputStream = httpRequestor.sendPost("application/json", body);
+            inputStream = httpRequestor.sendMultipartPost();
 
             BufferedReader bufferedReader = null;
             bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -165,8 +169,6 @@ public class PhotoTask extends AsyncTask<String, String, PhotoResponse> {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
             e.printStackTrace();
         }
 
@@ -215,41 +217,12 @@ public class PhotoTask extends AsyncTask<String, String, PhotoResponse> {
 
     /**
      *
-     * @param data
-     * @return
-     */
-    public ResponseBase getResponse(String data) {
-        ResponseBase response = new ResponseBase();
-
-        try {
-            JSONObject json = new JSONObject(data); //.getJSONObject("response");
-
-            for(String field : response.baseFields) {
-                if(json.has(field)) response.setBase(field, json.getString(field));
-            }
-
-            myLog.d(TAG, "**************************************************");
-            myLog.d(TAG, response.toString());
-            myLog.d(TAG, "**************************************************");
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            response.setMessage(mActivity.getResources().getString(R.string.server_json_data_error) + "\n" + e.getMessage());
-        }
-
-        return response;
-    }
-
-    /**
-     *
      * @param jsonString
      * @return
      */
     private PhotoResponse getResponseData(String jsonString) {
 
         PhotoResponse response = new PhotoResponse();
-
-        //myLog.d(TAG, "*** decodeData: "+data);
 
         try {
             JSONObject json = new JSONObject(jsonString);

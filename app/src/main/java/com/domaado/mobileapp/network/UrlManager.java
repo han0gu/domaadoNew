@@ -29,8 +29,12 @@ public class UrlManager {
         return ctx.getResources().getString(R.string.url_check_update);
     }
 
-    public static String getPhotoProfileUpdateAPI(@NonNull Context ctx) {
-        return ctx.getResources().getString(R.string.url_my_photo_update);
+    public static String getProfileUpdateAPI(@NonNull Context ctx) {
+        return ctx.getResources().getString(R.string.url_profile_update);
+    }
+
+    public static String getPhotoUploadAPI(@NonNull Context ctx) {
+        return ctx.getResources().getString(R.string.url_photo_upload);
     }
 
     /**

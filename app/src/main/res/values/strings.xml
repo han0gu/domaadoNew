@@ -117,7 +117,9 @@
     <!-- 업데이트확인 -->
     <string name="url_check_update" translatable="false">/check_update</string>
 
-    <string name="url_my_photo_update" translatable="false">/photo_update</string>
+    <string name="url_profile_update" translatable="false">/profile_update</string>
+
+    <string name="url_photo_upload" translatable="false">/photo_upload</string>
 
     <!-- share redirect url -->
     <string name="share_url" translatable="false">/share</string>
@@ -225,8 +227,8 @@
     <string name="error_gif">x or y bound size should be at least %1$dpx and file size should be no more than %2$sM</string>
     <string name="toast_image_intent_null">이미지 가져오기 옵션이 잘못되었습니다.</string>
     <string name="lbl_set_profile_photo">Set profile image</string>
-    <string name="lbl_take_camera_picture">Take a picture</string>
-    <string name="lbl_choose_from_gallery">Choose from gallery</string>
+    <string name="lbl_take_camera_picture">CAMERA</string>
+    <string name="lbl_choose_from_gallery">GALLERY</string>
     <string name="popup_other_choose_file">파일을 선택하세요</string>
 
     <string name="choose_file_error_file_type">이 형식의 파일을 열 수 없습니다.</string>
