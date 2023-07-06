@@ -106,6 +106,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -117,6 +119,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2816,18 +2819,24 @@ public class Common {
 //	}
 
 	public static String getPathFromUri(ContentResolver resolver, Uri uri) {
-		if(uri!=null) {
-			Cursor returnCursor =
-					resolver.query(uri, null, null, null, null);
-			assert returnCursor != null;
-			int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-			returnCursor.moveToFirst();
-			String name = returnCursor.getString(nameIndex);
-			returnCursor.close();
-			return name;
-		} else {
-			return "unknown";
+		try {
+			if (uri != null) {
+				Cursor returnCursor =
+						resolver.query(uri, null, null, null, null);
+				int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+				returnCursor.moveToFirst();
+				String name = returnCursor.getString(nameIndex);
+				returnCursor.close();
+				return name;
+			} else {
+				return "unknown";
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			myLog.e(TAG, "*** getPathFromUri Exception: "+e.getMessage());
 		}
+
+		return "unknown";
 	}
 
 	public static Bitmap getUriImage(Context context, Uri uri) throws FileNotFoundException, IOException{
@@ -3292,6 +3301,29 @@ public class Common {
 		}
 
 		return uuid;
+	}
+
+	public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+		Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+		String query = url.getQuery();
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			int idx = pair.indexOf("=");
+			query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+		}
+
+		return query_pairs;
+	}
+
+	public static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
+		Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+		String[] pairs = query.split("&");
+		for (String pair : pairs) {
+			int idx = pair.indexOf("=");
+			query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+		}
+
+		return query_pairs;
 	}
 
 }

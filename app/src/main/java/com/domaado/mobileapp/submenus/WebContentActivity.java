@@ -135,6 +135,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
     private UploadData uploadData;
 
+    private String resultCallback;
+
 //    private Timer mTimer;
 
     LocalBroadcastManager mLocalBroadcastManager;
@@ -185,7 +187,12 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             }
         } else {
             myLog.e(TAG, "*** CameraUtilResult CANCELLED! - "+result.getResultCode());
+
+            if(!TextUtils.isEmpty(resultCallback)) {
+                callJavascriptCallBack(Common.buildCallbackWithValue(resultCallback, new String[]{""}));
+            }
         }
+
     });
 
     /**
@@ -1583,59 +1590,61 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
         });
     }
 
-    private void procProfilePhoto(Uri uri) {
+    private void procProfilePhoto(final Uri uri) {
 
         if(uri!=null) {
             try {
                 myLog.e(TAG, "*** procProfilePhoto uri: "+uri.toString());
 
-                Common.loadImageCache(this, uri.toString(), new Handler(msg -> {
+//                Common.loadImageCache(this, uri.toString(), new Handler(msg -> {
+//
+//                    switch(msg.what) {
+//                        case 0: {
+//                            if(msg.obj instanceof PhotoEntry) {
+//                                PhotoEntry photoEntry = (PhotoEntry) msg.obj;
+//
+//                                photoEntry.setPhotoUrl(uploadData.url);
+//                                photoEntry.setPhotoParam(uploadData.params);
+//
+////                                sendProfileData(App.getMemberEntry(), photoEntry);
+//                                uploadPhoto(photoEntry);
+//                            } else {
+//                                Toast.makeText(this, "UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
+//                            }
+//                            break;
+//                        }
+//                        case 1:
+//                        case 2: {
+//                            if(msg.obj instanceof String) {
+//                                String message = (String)msg.obj;
+//                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+//                            } else {
+//                                Toast.makeText(this, msg.what+" UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
+//                            }
+//                            break;
+//                        }
+//
+//                    }
+//
+//                    return true;
+//                }));
 
-                    switch(msg.what) {
-                        case 0: {
-                            if(msg.obj instanceof PhotoEntry) {
-                                PhotoEntry photoEntry = (PhotoEntry) msg.obj;
-
-                                photoEntry.setPhotoUrl(uploadData.url);
-                                photoEntry.setPhotoParam(uploadData.params);
-
-//                                sendProfileData(App.getMemberEntry(), photoEntry);
-                                uploadPhoto(photoEntry);
-                            } else {
-                                Toast.makeText(this, "UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
-                            }
-                            break;
-                        }
-                        case 1:
-                        case 2: {
-                            if(msg.obj instanceof String) {
-                                String message = (String)msg.obj;
-                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(this, msg.what+" UNKNOWN ERROR!", Toast.LENGTH_SHORT).show();
-                            }
-                            break;
-                        }
-
-                    }
-
-                    return true;
-                }));
+                PhotoEntry photoEntry = new PhotoEntry();
 
                 Bitmap bitmap = Common.getUriImage(this, uri);
                 if(bitmap!=null) {
-
-                    PhotoEntry photoEntry = new PhotoEntry();
                     photoEntry.setPhotoData(bitmap);
-                    photoEntry.setPhotoType(Common.getMimeType(uri.toString()));
-                    photoEntry.setPhotoUri(uri);
+                }
 
-                    photoEntry.setPhotoUrl(uploadData.url);
-                    photoEntry.setPhotoParam(uploadData.params);
+                photoEntry.setPhotoType(Common.getMimeType(uri.toString()));
+                photoEntry.setPhotoUri(uri);
+
+                photoEntry.setPhotoUrl(uploadData.url);
+                photoEntry.setPhotoParam(uploadData.params);
 
 //                    sendProfileData(App.getMemberEntry(), photoEntry);
-                    uploadPhoto(photoEntry);
-                }
+                uploadPhoto(photoEntry);
+
             } catch (IOException e) {
                 e.printStackTrace();
 
@@ -1690,15 +1699,21 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
             return true;
         }));
+
+        String filepath = Common.getCacheFileName(this, photoEntry.getPhotoUri().toString());
+
         if(!TextUtils.isEmpty(photoEntry.getPhotoUrl())) {
-            photoUploadTask.execute(photoEntry.getPhotoUrl(), "", Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+            photoUploadTask.execute(photoEntry.getPhotoUrl(), "", filepath); // Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
         } else {
-            photoUploadTask.execute(Constant.API_URL[myLog.debugMode ? 1 : 0], UrlManager.getPhotoUploadAPI(this), Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+            photoUploadTask.execute(Constant.API_URL[myLog.debugMode ? 1 : 0], UrlManager.getPhotoUploadAPI(this), filepath); //Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
         }
     }
 
     private void resultUploadPhoto(PhotoResponse response) {
-
+        JSONObject obj = Common.toJSON(response.getRequestParameterMap());
+        if(!TextUtils.isEmpty(resultCallback)) {
+            callJavascriptCallBack(Common.buildCallbackWithValue(resultCallback, new String[]{obj.toString()}));
+        }
     }
 
     private void sendProfileData(final MemberEntry memberEntry, final PhotoEntry photoEntry) {

@@ -3,6 +3,7 @@ package com.domaado.mobileapp.data;
 import android.text.TextUtils;
 
 import com.domaado.mobileapp.Common;
+import com.domaado.mobileapp.widget.JsonUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by jameshong on 2018. 5. 30..
@@ -66,6 +68,27 @@ public class PhotoResponse extends ResponseBase  implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public HashMap<String, Object> getRequestParameterMap() {
+        HashMap<String, Object> map = getBaseParameter();
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(fields[0], getPhotoEntriesToJson());
+
+        map.put(OBJECTS_KEY[0], data);
+
+        return map;
+    }
+
+    public JSONArray getPhotoEntriesToJson() {
+
+        JSONArray array = new JSONArray();
+        for(PhotoEntry obj : getPhotos()) {
+            array.put(JsonUtils.mapToJson(obj.getRequestParameterMap()));
+        }
+
+        return array;
     }
 
     @Override

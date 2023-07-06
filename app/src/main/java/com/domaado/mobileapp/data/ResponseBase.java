@@ -3,6 +3,7 @@ package com.domaado.mobileapp.data;
 import android.text.TextUtils;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Locale;
 
 import com.domaado.mobileapp.network.SecureNetworkUtil;
@@ -83,6 +84,17 @@ public class ResponseBase implements Serializable {
     public String getNotNullString(String value) {
         if("null".equalsIgnoreCase(value) || TextUtils.isEmpty(value)) return "";
         else return value;
+    }
+
+    //"request_id", "response_yn", "message"
+    public HashMap<String, Object> getBaseParameter() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put(baseFields[0], this.getRequestId());
+        map.put(baseFields[1], this.getResponseYn());
+        map.put(baseFields[2], this.getMessage());
+
+        return map;
     }
 
     @Override

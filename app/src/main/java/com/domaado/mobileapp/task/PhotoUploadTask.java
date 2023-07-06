@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -119,8 +120,9 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
         String path = param.length > 1 ? param[1] : "";
         String filePath = param.length > 2 ? param[2] : "";
 
-        myLog.d(TAG, "*** URL:"+host+path);
-        myLog.d(TAG, "*** photoEntry: "+photoEntry.toString());
+        myLog.d(TAG, "*** URL: " + host+path);
+        myLog.d(TAG, "*** filePath: " + filePath);
+        myLog.d(TAG, "*** photoEntry: " + photoEntry.toString());
 
         if(TextUtils.isEmpty(host) || TextUtils.isEmpty(filePath)) {
             myLog.e(TAG, "*** REQUIRED Parameters (host, filepath)!!");
@@ -140,7 +142,14 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
                 }
             }
 
-            String photoName = !TextUtils.isEmpty(photoEntry.getPhotoName()) ? photoEntry.getPhotoName() : "photo_name";
+            if(!TextUtils.isEmpty(photoEntry.getPhotoParam())) {
+                Map<String, String> customParamsMap = Common.splitQuery(photoEntry.getPhotoParam());
+                for (Map.Entry<String, String> entry : customParamsMap.entrySet()) {
+                    httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
+                }
+            }
+
+            String photoName = !TextUtils.isEmpty(photoEntry.getPhotoName()) ? photoEntry.getPhotoName() : "imageFile";
             //String filepath = Common.getPathFromUri(mActivity.getContentResolver(), photoEntry.getPhotoUri());
             httpRequestor.addFile(photoName, new File(filePath));
 
