@@ -1700,7 +1700,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             return true;
         }));
 
-        String filepath = Common.getCacheFileName(this, photoEntry.getPhotoUri().toString());
+//        String filepath = ImagePickerActivity.queryName(getContentResolver(), photoEntry.getPhotoUri()); // Common.getCacheFileName(this, photoEntry.getPhotoUri().toString());
+        String filepath = ImagePickerActivity.getRealPathFromURI(this, photoEntry.getPhotoUri());
 
         if(!TextUtils.isEmpty(photoEntry.getPhotoUrl())) {
             photoUploadTask.execute(photoEntry.getPhotoUrl(), "", filepath); // Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));

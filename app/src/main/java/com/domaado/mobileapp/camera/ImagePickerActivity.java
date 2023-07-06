@@ -389,19 +389,21 @@ public class ImagePickerActivity extends AppCompatActivity {
         return uri;
     }
 
-    private static String queryName(ContentResolver resolver, Uri uri) {
+    public static String queryName(ContentResolver resolver, Uri uri) {
         if(uri!=null) {
             Cursor returnCursor =
                     resolver.query(uri, null, null, null, null);
-            assert returnCursor != null;
-            int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            returnCursor.moveToFirst();
-            String name = returnCursor.getString(nameIndex);
-            returnCursor.close();
-            return name;
-        } else {
-            return "unknown";
+            if(returnCursor!=null) {
+//                assert returnCursor != null;
+                int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                returnCursor.moveToFirst();
+                String name = returnCursor.getString(nameIndex);
+                returnCursor.close();
+                return name;
+            }
         }
+
+        return "unknown";
     }
 
     /**

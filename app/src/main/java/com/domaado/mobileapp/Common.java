@@ -2739,7 +2739,7 @@ public class Common {
 			String[] fnames = url.split("/");
 			if (fnames != null && fnames.length > 0) {
 				fname = fnames[fnames.length - 1];
-				fname = !TextUtils.isEmpty(fname) ? fname.replaceAll("[^a-zA-Z0-9_-]", "") : fname;
+				//fname = !TextUtils.isEmpty(fname) ? fname.replaceAll("[^a-zA-Z.0-9_-]", "") : fname;
 			}
 		} catch (Exception e) {
 		}
