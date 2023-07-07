@@ -21,4 +21,5 @@ public interface HandleUiListener {
     default void selectCapture(String uploadUrl, String dataVal, String callback) {}
 
     default void getpushid(String callback) {}
+    default void getpushtoken(String callback) {}
 }

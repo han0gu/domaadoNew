@@ -357,4 +357,9 @@ public class JavaScriptInterface {
         if(handleUiListener!=null) handleUiListener.getpushid(callback);
     }
 
+    @JavascriptInterface
+    public void getpushtoken(String callback) {
+        if(handleUiListener!=null) handleUiListener.getpushtoken(callback);
+    }
+
 }

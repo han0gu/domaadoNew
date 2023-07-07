@@ -2,8 +2,10 @@ package com.domaado.mobileapp.task;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -15,9 +17,10 @@ import com.domaado.mobileapp.Common;
 import com.domaado.mobileapp.Constant;
 import com.domaado.mobileapp.R;
 import com.domaado.mobileapp.data.PhotoEntry;
-import com.domaado.mobileapp.data.PhotoResponse;
+import com.domaado.mobileapp.data.DomaadoImageResponse;
 import com.domaado.mobileapp.network.HttpRequestor;
 import com.domaado.mobileapp.widget.CustomAlertDialog;
+import com.domaado.mobileapp.widget.FileUtils;
 import com.domaado.mobileapp.widget.myLog;
 
 import org.json.JSONException;
@@ -36,7 +39,7 @@ import java.util.Map;
 /**
  * 파일 멀티파트 업로드!
  */
-public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
+public class PhotoUploadTask extends AsyncTask<String, String, DomaadoImageResponse> {
 
     private String TAG = PhotoUploadTask.class.getSimpleName();
 
@@ -112,19 +115,26 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
     }
 
     @Override
-    protected PhotoResponse doInBackground(String... param) {
-        PhotoResponse result = null;
+    protected DomaadoImageResponse doInBackground(String... param) {
+        DomaadoImageResponse result = null;
 
         StringBuffer value = new StringBuffer("");
         String host = param.length > 0 ? param[0] : "";
         String path = param.length > 1 ? param[1] : "";
-        String filePath = param.length > 2 ? param[2] : "";
+
+//        String filePath = Common.uri2path(mActivity, photoEntry.getPhotoUri());
+        File filePath = null;
+        try {
+            filePath = FileUtils.getFileFromUri(mActivity, photoEntry.getPhotoUri());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         myLog.d(TAG, "*** URL: " + host+path);
         myLog.d(TAG, "*** filePath: " + filePath);
         myLog.d(TAG, "*** photoEntry: " + photoEntry.toString());
 
-        if(TextUtils.isEmpty(host) || TextUtils.isEmpty(filePath)) {
+        if(TextUtils.isEmpty(host) || filePath==null) {
             myLog.e(TAG, "*** REQUIRED Parameters (host, filepath)!!");
             return null;
         }
@@ -136,8 +146,10 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
 
             for (Map.Entry<String, Object> entry : photoEntry.getRequestParameterMapParams().entrySet()) {
                 if(entry.getValue() instanceof String) {
+                    myLog.d(TAG, "*** PARAMS: "+entry.getKey()+" = "+entry.getValue());
                     httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
                 } else if(entry.getValue() instanceof Integer) {
+                    myLog.d(TAG, "*** PARAMS: "+entry.getKey()+" = "+entry.getValue());
                     httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
                 }
             }
@@ -145,13 +157,14 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
             if(!TextUtils.isEmpty(photoEntry.getPhotoParam())) {
                 Map<String, String> customParamsMap = Common.splitQuery(photoEntry.getPhotoParam());
                 for (Map.Entry<String, String> entry : customParamsMap.entrySet()) {
+                    myLog.d(TAG, "*** PARAMS: "+entry.getKey()+" = "+entry.getValue());
                     httpRequestor.addParameter(entry.getKey(), Common.valueOf(entry.getValue()));
                 }
             }
 
             String photoName = !TextUtils.isEmpty(photoEntry.getPhotoName()) ? photoEntry.getPhotoName() : "imageFile";
             //String filepath = Common.getPathFromUri(mActivity.getContentResolver(), photoEntry.getPhotoUri());
-            httpRequestor.addFile(photoName, new File(filePath));
+            httpRequestor.addFile(photoName, filePath);
 
             InputStream inputStream = null;
             inputStream = httpRequestor.sendMultipartPost();
@@ -185,7 +198,7 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
     }
 
     @Override
-    protected void onPostExecute(PhotoResponse result) {
+    protected void onPostExecute(DomaadoImageResponse result) {
         super.onPostExecute(result);
 
         if (progressDialog != null) {
@@ -229,9 +242,9 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
      * @param jsonString
      * @return
      */
-    private PhotoResponse getResponseData(String jsonString) {
+    private DomaadoImageResponse getResponseData(String jsonString) {
 
-        PhotoResponse response = new PhotoResponse();
+        DomaadoImageResponse response = new DomaadoImageResponse();
 
         try {
             JSONObject json = new JSONObject(jsonString);
@@ -239,15 +252,19 @@ public class PhotoUploadTask extends AsyncTask<String, String, PhotoResponse> {
                 if(json.has(field)) response.setBase(field, json.getString(field));
             }
 
-            if(!TextUtils.isEmpty(response.getResponseYn()) && "Y".equals(response.getResponseYn().toUpperCase())) {
-                // 응답이 성공이면.
-                if(json.has(response.OBJECTS_KEY[0]) && response.fields.length > 0 && !json.isNull(response.OBJECTS_KEY[0])) {
-                    JSONObject data = json.getJSONObject(response.OBJECTS_KEY[0]);
-                    for (String field : response.fields) {
-                        if (data.has(field)) response.set(field, data.getString(field));
-                    }
-                }
+            for (String field : response.fields) {
+                if (json.has(field)) response.set(field, json.getString(field));
             }
+
+//            if(!TextUtils.isEmpty(response.getResponseYn()) && "Y".equals(response.getResponseYn().toUpperCase())) {
+//                // 응답이 성공이면.
+//                if(json.has(response.OBJECTS_KEY[0]) && response.fields.length > 0 && !json.isNull(response.OBJECTS_KEY[0])) {
+//                    JSONObject data = json.getJSONObject(response.OBJECTS_KEY[0]);
+//                    for (String field : response.fields) {
+//                        if (data.has(field)) response.set(field, data.getString(field));
+//                    }
+//                }
+//            }
 
         } catch (JSONException e) {
             e.printStackTrace();

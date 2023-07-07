@@ -51,6 +51,7 @@ import com.domaado.mobileapp.camera.BottomSelectDialog;
 import com.domaado.mobileapp.camera.CameraUtil;
 import com.domaado.mobileapp.camera.ImagePickerActivity;
 import com.domaado.mobileapp.data.CheckUpdateRequest;
+import com.domaado.mobileapp.data.DomaadoImageResponse;
 import com.domaado.mobileapp.data.MemberEntry;
 import com.domaado.mobileapp.data.PhotoEntry;
 import com.domaado.mobileapp.data.PhotoResponse;
@@ -190,6 +191,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
             if(!TextUtils.isEmpty(resultCallback)) {
                 callJavascriptCallBack(Common.buildCallbackWithValue(resultCallback, new String[]{""}));
+
+                resultCallback = "";
             }
         }
 
@@ -1068,6 +1071,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 uploadData.url = uploadUrl;
                 uploadData.params = dataVal;
 
+                resultCallback = callback;
+
 //                selectCaptureMedia();
                 updateProfileImage(ImagePickerActivity.REQUEST_SELECT_METHOD);
             }
@@ -1077,6 +1082,24 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
                 OSDeviceState osDeviceState = OneSignal.getDeviceState();
                 String pushIdString = "";
                 if(osDeviceState!=null) {
+                    /**
+                     * USERID를 가져감~!
+                     */
+                    pushIdString = osDeviceState.getUserId(); // osDeviceState.getPushToken();
+                }
+
+                callJavascriptCallBack(Common.buildCallbackWithValue(callback, new String[]{pushIdString}));
+
+            }
+
+            @Override
+            public void getpushtoken(String callback) {
+                OSDeviceState osDeviceState = OneSignal.getDeviceState();
+                String pushIdString = "";
+                if(osDeviceState!=null) {
+                    /**
+                     * USERID를 가져감~!
+                     */
                     pushIdString = osDeviceState.getPushToken();
                 }
 
@@ -1154,6 +1177,8 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             mWebView.post(new Runnable() {
                 @Override
                 public void run() {
+                    //myLog.d(TAG, "*** callbackScriptFunction: "+callbackScriptFunction);
+
                     mWebView.loadUrl("javascript:" + callbackScriptFunction);
                 }
             });
@@ -1656,7 +1681,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
     private void uploadPhoto(PhotoEntry photoEntry) {
         PhotoUploadTask photoUploadTask = new PhotoUploadTask(this, photoEntry, true, new Handler(msg -> {
 
-            PhotoResponse response = (PhotoResponse) msg.obj;
+            DomaadoImageResponse response = (DomaadoImageResponse) msg.obj;
 
             switch(msg.what) {
                 case Constant.RESPONSE_SUCCESS: {
@@ -1700,20 +1725,20 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
             return true;
         }));
 
-//        String filepath = ImagePickerActivity.queryName(getContentResolver(), photoEntry.getPhotoUri()); // Common.getCacheFileName(this, photoEntry.getPhotoUri().toString());
-        String filepath = ImagePickerActivity.getRealPathFromURI(this, photoEntry.getPhotoUri());
-
         if(!TextUtils.isEmpty(photoEntry.getPhotoUrl())) {
-            photoUploadTask.execute(photoEntry.getPhotoUrl(), "", filepath); // Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+            photoUploadTask.execute(photoEntry.getPhotoUrl(), "");
         } else {
-            photoUploadTask.execute(Constant.API_URL[myLog.debugMode ? 1 : 0], UrlManager.getPhotoUploadAPI(this), filepath); //Common.getPathFromUri(getContentResolver(), photoEntry.getPhotoUri()));
+            photoUploadTask.execute(Constant.API_URL[myLog.debugMode ? 1 : 0], UrlManager.getPhotoUploadAPI(this));
         }
     }
 
-    private void resultUploadPhoto(PhotoResponse response) {
+    private void resultUploadPhoto(DomaadoImageResponse response) {
+        myLog.d(TAG, "*** resultUploadPhoto response: "+response.toString());
+
         JSONObject obj = Common.toJSON(response.getRequestParameterMap());
         if(!TextUtils.isEmpty(resultCallback)) {
             callJavascriptCallBack(Common.buildCallbackWithValue(resultCallback, new String[]{obj.toString()}));
+            resultCallback = "";
         }
     }
 

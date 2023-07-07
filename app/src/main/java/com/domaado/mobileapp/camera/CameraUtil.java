@@ -236,6 +236,9 @@ public class CameraUtil {
     }
 
     public Uri getmProductPhotoUri() {
+        if(mProductPhotoUri==null) {
+            initDefaultPath();
+        }
         return mProductPhotoUri;
     }
 

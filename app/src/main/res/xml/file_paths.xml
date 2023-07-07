@@ -9,8 +9,8 @@
 <!--  <external-path name="external_files" path="." />-->
 
     <external-path name="storage/emulated" path="." />
-    <external-path name="images" path="." />
+<!--    <external-path name="images" path="." />-->
     <external-path name="external_files" path="." />
-    <external-path name="com.domaado.mobileapp.fileProvider" path="." />
+<!--    <external-path name="com.domaado.mobileapp.fileProvider" path="." />-->
 
 </paths>

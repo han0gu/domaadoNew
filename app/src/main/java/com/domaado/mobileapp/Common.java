@@ -10,6 +10,7 @@ import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -2818,26 +2819,61 @@ public class Common {
 //		}
 //	}
 
-	public static String getPathFromUri(ContentResolver resolver, Uri uri) {
-		try {
-			if (uri != null) {
-				Cursor returnCursor =
-						resolver.query(uri, null, null, null, null);
-				int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-				returnCursor.moveToFirst();
-				String name = returnCursor.getString(nameIndex);
-				returnCursor.close();
-				return name;
-			} else {
-				return "unknown";
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-			myLog.e(TAG, "*** getPathFromUri Exception: "+e.getMessage());
-		}
+	//Uri -> Path(파일경로)
+	public static String uri2path(Context context, Uri contentUri) {
+		String[] proj = { MediaStore.Images.Media.DATA };
 
-		return "unknown";
+		Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+		cursor.moveToNext();
+		@SuppressLint("Range") String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
+		Uri uri = Uri.fromFile(new File(path));
+
+		cursor.close();
+		return path;
 	}
+
+	//Path(파일경로) -> Uri
+	public static Uri path2uri(Context context, String filePath) {
+		Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, "_data = '" + filePath + "'", null, null);
+
+		cursor.moveToNext();
+		@SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("_id"));
+		Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+		return uri;
+	}
+
+	public static String getPathFromUri(Context context, Uri uri) {
+		String[] projection = { MediaStore.Images.Media.DATA };
+		Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+		if (cursor == null) return null;
+		int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		String s=cursor.getString(column_index);
+		cursor.close();
+		return s;
+	}
+
+//	public static String getPathFromUri(ContentResolver resolver, Uri uri) {
+//		try {
+//			if (uri != null) {
+//				Cursor returnCursor =
+//						resolver.query(uri, null, null, null, null);
+//				int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+//				returnCursor.moveToFirst();
+//				String name = returnCursor.getString(nameIndex);
+//				returnCursor.close();
+//				return name;
+//			} else {
+//				return "unknown";
+//			}
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//			myLog.e(TAG, "*** getPathFromUri Exception: "+e.getMessage());
+//		}
+//
+//		return "unknown";
+//	}
 
 	public static Bitmap getUriImage(Context context, Uri uri) throws FileNotFoundException, IOException{
 		InputStream input = context.getContentResolver().openInputStream(uri);

@@ -348,7 +348,7 @@ public class ImagePickerActivity extends AppCompatActivity {
         if (setBitmapMaxWidthHeight)
             options.withMaxResultSize(bitmapMaxWidth, bitmapMaxHeight);
 
-        UCrop.of(sourceUri, destinationUri)
+        UCrop.of(sourceUri, destinationUri) //cameraUtil.getmProductPhotoUri())
                 .withOptions(options)
                 .start(this);
     }
@@ -427,7 +427,6 @@ public class ImagePickerActivity extends AppCompatActivity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getRealPathFromURI_API19(Context context, Uri uri){
         String filePath = "";
         Cursor cursor = null;
@@ -467,9 +466,11 @@ public class ImagePickerActivity extends AppCompatActivity {
         try {
             String[] proj = { MediaStore.Images.Media.DATA };
             cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-            cursor.moveToFirst();
-            int column_index = cursor.getColumnIndex(proj[0]);
-            path = cursor.getString(column_index);
+            if(cursor!=null) {
+                cursor.moveToFirst();
+                int column_index = cursor.getColumnIndex(proj[0]);
+                path = cursor.getString(column_index);
+            }
         } finally {
             if (cursor != null) {
                 cursor.close();
