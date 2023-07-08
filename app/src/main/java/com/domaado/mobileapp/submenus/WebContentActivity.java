@@ -1663,6 +1663,7 @@ public class WebContentActivity extends AppCompatActivity implements View.OnClic
 
                 photoEntry.setPhotoType(Common.getMimeType(uri.toString()));
                 photoEntry.setPhotoUri(uri);
+                photoEntry.setPhotoName(Common.getLastFilename(uri.toString()));
 
                 photoEntry.setPhotoUrl(uploadData.url);
                 photoEntry.setPhotoParam(uploadData.params);
